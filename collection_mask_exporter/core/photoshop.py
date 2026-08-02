@@ -16,9 +16,11 @@ def _layer_name(path):
     stem = os.path.splitext(os.path.basename(path))[0]
     parent = os.path.basename(os.path.dirname(path)).lower()
     if parent == "masks":
-        return f"Mask - {stem}"
+        return stem
     if parent == "color_id":
-        return f"Color ID - {stem}"
+        return "Color ID"
+    if parent == "render":
+        return "Render"
     return stem
 
 
@@ -35,7 +37,7 @@ def _handoff_entries(outputs):
         channel = None
         if is_mask:
             base = safe_filename(os.path.splitext(os.path.basename(absolute))[0])
-            channel = f"CMask - {base}"
+            channel = base
             candidate = channel
             counter = 2
             while candidate.casefold() in used_channels:

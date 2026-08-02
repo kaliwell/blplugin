@@ -1,6 +1,6 @@
 # CMask 实现状态与使用说明
 
-> 插件版本：v0.7.0
+> 插件版本：v0.8.0
 > 正式支持：Blender 4.5.x、5.0.x、5.2.x
 > 验证版本：4.5.12、5.0.1、5.2.0
 
@@ -112,7 +112,10 @@
   脚本路径和目标 PSD 路径。
 - Photoshop 脚本逐项校验源文件，将 `Color_ID` 和 `Masks` 输出转换为清晰的
   命名图层，并自动保存带图层的 PSD。
-- 可将每个 `Masks` 图层的透明度选区写入独立 `CMask - ...` Alpha 通道；
+- 默认让蒙版文件、Photoshop 图层和 Alpha 通道直接使用 Collection 组名；
+- 蒙版 RGB 与同组 Color ID 颜色一致，Alpha 仍保留精确覆盖率；
+- 一键生成正式渲染、Color ID、全部蒙版、Photoshop JSX 和交接清单；
+- 可将每个 `Masks` 图层的透明度选区写入独立同组名 Alpha 通道；
   通道名会自动消解重复，PSD 保存时显式保留 Alpha 通道。
 - “Photoshop 创建 Alpha 通道”可关闭，并可随场景预设保存。
 - JSX 使用带 BOM 的 UTF-8，支持中文 Collection 名称和 Windows 路径。

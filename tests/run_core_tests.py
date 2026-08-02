@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import importlib
+import os
 import pathlib
 import sys
 
@@ -370,6 +371,9 @@ def test_templates_reserved_names_and_issue_details():
     settings.filename_template = "{scene}_{collection}_{frame}_{mode}"
     bpy.ops.cmask.scan()
     path = mask_path(scene, settings, "Part")
+    assert os.path.basename(path) == "Part.png"
+    settings.mask_use_group_name = False
+    path = mask_path(scene, settings, "Part")
     assert "Scene_Part_0001_visible.png" in path
     assert safe_filename("NUL") == "_NUL"
     settings.filename_template = "{unknown}"
@@ -541,6 +545,8 @@ def test_scene_presets_round_trip():
     settings.color_depth = "32"
     settings.edge_adjustment = 3
     settings.alpha_mode = "PREMULTIPLIED"
+    settings.mask_use_group_name = False
+    settings.mask_use_group_color = False
     settings.transparent_material_mode = "EXCLUDE"
     settings.photoshop_create_channels = False
     settings.geometry_nodes_split_sources = True
@@ -559,6 +565,8 @@ def test_scene_presets_round_trip():
     settings.color_depth = "8"
     settings.edge_adjustment = 0
     settings.alpha_mode = "STRAIGHT"
+    settings.mask_use_group_name = True
+    settings.mask_use_group_color = True
     settings.transparent_material_mode = "INCLUDE"
     settings.photoshop_create_channels = True
     settings.geometry_nodes_split_sources = False
@@ -577,6 +585,8 @@ def test_scene_presets_round_trip():
     assert settings.output_format == "OPEN_EXR"
     assert settings.color_depth == "32" and settings.edge_adjustment == 3
     assert settings.alpha_mode == "PREMULTIPLIED"
+    assert settings.mask_use_group_name is False
+    assert settings.mask_use_group_color is False
     assert settings.transparent_material_mode == "EXCLUDE"
     assert settings.photoshop_create_channels is False
     assert settings.geometry_nodes_split_sources is True
@@ -671,7 +681,8 @@ def test_photoshop_handoff_generator():
         assert "stringIDToTypeID(\"transparencyEnum\")" in script
         assert "channelErrors.push" in script
         assert "activeLayerIsEmpty" in script and "emptyAlpha" in script
-        assert "Color ID - " in script and "Mask - " in script
+        assert '"name": "Color ID"' in script
+        assert '"name": "\\u4e3b\\u4f53\\u8499\\u7248"' in script
         assert "\\u5f69\\u8272" in script and "\\u4e3b\\u4f53" in script
 
         jsx_path, manifest_path, psd_path = write_photoshop_handoff(scene, settings)
@@ -682,9 +693,9 @@ def test_photoshop_handoff_generator():
         assert manifest["schema"] == "cmask.photoshop_handoff.v1"
         assert manifest["create_alpha_channels"] is True
         assert len(manifest["outputs"]) == 2
-        assert manifest["outputs"][1]["layer"].startswith("Mask - ")
+        assert manifest["outputs"][1]["layer"] == "主体蒙版"
         assert manifest["outputs"][0]["channel"] is None
-        assert manifest["outputs"][1]["channel"].startswith("CMask - ")
+        assert manifest["outputs"][1]["channel"] == "主体蒙版"
         assert psd_path.endswith("_cmask_photoshop.psd")
 
         settings.photoshop_create_channels = False
@@ -724,7 +735,7 @@ def test_compatibility_diagnostic():
         "layer_collection_flags", "material_node_tree", "openimageio",
     }
     path, written = write_compatibility_report(scene, settings)
-    assert Path(path).is_file() and written["addon_version"] == "0.7.0"
+    assert Path(path).is_file() and written["addon_version"] == "0.8.0"
     with open(path, "r", encoding="utf-8") as handle:
         assert json.load(handle)["blender_version"] == bpy.app.version_string
     assert bpy.ops.cmask.compatibility_report() == {"FINISHED"}

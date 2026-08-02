@@ -20,6 +20,8 @@ SETTING_FIELDS = (
     "color_depth",
     "edge_adjustment",
     "alpha_mode",
+    "mask_use_group_name",
+    "mask_use_group_color",
     "transparent_material_mode",
     "create_compositor_nodes",
     "photoshop_create_channels",

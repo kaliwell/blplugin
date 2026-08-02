@@ -1,7 +1,7 @@
 # CMask 项目交接与当前进度
 
 > 交接日期：2026-08-02
-> 当前版本：v0.7.0
+> 当前版本：v0.8.0
 > 项目目录：`D:\blplugin`
 > 正式支持：Blender 4.5.x、5.0.x、5.2.x
 > 最新验证矩阵：Blender 4.5.12 LTS、5.0.1、5.2.0 LTS
@@ -9,21 +9,21 @@
 ## 1. 交接结论
 
 Collection Mask Exporter 当前已经形成可安装、可使用、可测试的完整 Blender
-Extension。以 v0.7.0 已定义的功能范围计算，核心交付流程已完成；剩余工作主要是
+Extension。以 v0.8.0 已定义的功能范围计算，核心交付流程已完成；剩余工作主要是
 Blender 6.0 正式版发布后的实机认证、更多动态 Geometry Nodes 数据域，以及持续的
 UI/Photoshop 跨版本兼容维护。
 
 当前可直接交付的安装包与完整交付包：
 
 ```text
-D:\blplugin\dist\collection_mask_exporter-0.7.0.zip
-D:\blplugin\dist\collection_mask_exporter-0.7.0-release.zip
+D:\blplugin\dist\collection_mask_exporter-0.8.0.zip
+D:\blplugin\dist\collection_mask_exporter-0.8.0-release.zip
 ```
 
 对应 SHA256 统一记录在：
 
 ```text
-D:\blplugin\dist\collection_mask_exporter-0.7.0-SHA256.txt
+D:\blplugin\dist\collection_mask_exporter-0.8.0-SHA256.txt
 ```
 
 最终安装 ZIP 已分别通过 Blender 4.5、5.0、5.2 的清单验证，以及隔离用户配置下
@@ -43,6 +43,7 @@ D:\blplugin\dist\collection_mask_exporter-0.7.0-SHA256.txt
 | Geometry Nodes 动态字段 | 已完成当前协议 | Blender 5.0+，求值后 Mesh FACE/INT `cmask_id` |
 | 中英文界面 | 已完成 | 跟随 Blender，兼容 `zh_CN` 与 `zh_HANS` |
 | Photoshop 自动交付 | 已完成并实机验证 | v0.6.6：6 图层、5 Alpha、PSD 保存通过 |
+| 一键渲染与 PS 交付 | 已完成 | 正式渲染、Color ID、组名彩色蒙版、JSX 与清单 |
 | CLI / 渲染农场 | 已完成 | JSON 任务、结果 JSON、诊断操作 |
 | 发布许可证与版权 | 已完成 | GPL-3.0-or-later、第三方清单、53 个 Python 文件 SPDX 头 |
 | Blender 6.0 正式版认证 | 待执行 | 正式版尚未纳入当前实机矩阵 |
@@ -95,6 +96,14 @@ D:\blplugin\dist\collection_mask_exporter-0.7.0-SHA256.txt
 - 正式支持范围收紧为 Blender 4.5.x、5.0.x、5.2.x。
 - Extension 最低安装版本提高到 Blender 4.5.0。
 - 兼容性诊断对 5.1、5.3 等非发布矩阵版本线标记 `UNVALIDATED`。
+
+### v0.8.0
+
+- 蒙版文件、Photoshop 图层和 Alpha 通道默认直接使用 Collection 组名。
+- 蒙版 RGB 与对应组的 Color ID 颜色一致，精确 Alpha、边缘调整和预乘仍保留。
+- 新增“一键导出渲染 + 蒙版 + Photoshop”：正式渲染、Color ID、全部 MASK、
+  JSX、交接清单和 JSON 报告一次完成。
+- CLI 新增 `delivery` 操作。
 
 ## 4. 关键工作流
 
@@ -257,12 +266,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\release.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\release.ps1 -FullRenderMatrix
 ```
 
-v0.7.0 当前发布产物：
+v0.8.0 当前发布产物：
 
-- `dist/collection_mask_exporter-0.7.0.zip`：Blender 从磁盘安装包。
-- `dist/collection_mask_exporter-0.7.0-release.zip`：README、CHANGELOG、全部文档、
+- `dist/collection_mask_exporter-0.8.0.zip`：Blender 从磁盘安装包。
+- `dist/collection_mask_exporter-0.8.0-release.zip`：README、CHANGELOG、全部文档、
   示例工程和安装包组成的完整交付包。
-- `dist/collection_mask_exporter-0.7.0-SHA256.txt`：上述两个 ZIP 的 SHA256。
+- `dist/collection_mask_exporter-0.8.0-SHA256.txt`：上述两个 ZIP 的 SHA256。
 
 ## 10. 已知边界与风险
 
@@ -276,19 +285,17 @@ v0.7.0 当前发布产物：
 - Photoshop 是否能直接打开 OpenEXR 取决于 Photoshop 版本；通用交付优先使用
   16-bit PNG。
 - 更新扩展后应完整退出并重启 Blender，避免旧 Python 模块继续驻留。
-- `main` 分支的本地 Git 仓库、忽略规则、属性规则和 CHANGELOG 已补齐；本机尚未
-  配置 Git 作者姓名和邮箱，因此不能代替维护者创建带身份的首个提交与 `v0.7.0`
-  标签。
+- `main` 分支、本地 Git 作者、忽略规则、属性规则和 CHANGELOG 已配置，v0.7.0
+  已有发布提交和标签；v0.8.0 完成验证后应创建对应提交和标签。
 
 ## 11. 下一阶段建议
 
 优先级从高到低：
 
 1. Blender 6.0 正式版发布后执行核心、面板、GN、渲染和示例工程完整矩阵。
-2. 配置维护者 Git 作者信息，创建首个提交并打 `v0.7.0` 标签。
-3. 扩展动态 GN 协议：评估 INSTANCE 域或 GeometrySet 实例引用的稳定映射方案。
-4. 增加真实 Photoshop 版本矩阵，记录 Windows/macOS、版本和 EXR 支持差异。
-5. 继续把底层少量中文异常文本迁入翻译表，使非 UI 错误也完全双语化。
+2. 扩展动态 GN 协议：评估 INSTANCE 域或 GeometrySet 实例引用的稳定映射方案。
+3. 增加真实 Photoshop 版本矩阵，记录 Windows/macOS、版本和 EXR 支持差异。
+4. 继续把底层少量中文异常文本迁入翻译表，使非 UI 错误也完全双语化。
 
 ## 12. 相关文档
 

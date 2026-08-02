@@ -36,6 +36,8 @@ def write_export_report(scene, settings, operation, outputs, elapsed_seconds,
         "color_depth": settings.color_depth,
         "edge_adjustment": settings.edge_adjustment,
         "alpha_mode": settings.alpha_mode,
+        "mask_use_group_name": settings.mask_use_group_name,
+        "mask_use_group_color": settings.mask_use_group_color,
         "transparent_material_mode": settings.transparent_material_mode,
         "create_compositor_nodes": settings.create_compositor_nodes,
         "multilayer_layers": [

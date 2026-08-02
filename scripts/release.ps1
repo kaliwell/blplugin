@@ -53,9 +53,13 @@ try {
             Invoke-Blender $entry.Exe @(
                 "--background", "--factory-startup", "--python", "tests\run_panel_api_tests.py"
             )
+            Write-Host "== CLI $($entry.Label) =="
+            Invoke-Blender $entry.Exe @(
+                "--background", "--factory-startup", "--python", "tests\run_cli_tests.py"
+            )
             Write-Host "== Sample project $($entry.Label) =="
             Invoke-Blender $entry.Exe @(
-                "examples\CMask_Demo.blend", "--background", "--python",
+                "--factory-startup", "examples\CMask_Demo.blend", "--background", "--python",
                 "tests\run_sample_project_tests.py"
             )
             if ($FullRenderMatrix) {

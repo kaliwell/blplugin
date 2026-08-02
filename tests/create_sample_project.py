@@ -93,6 +93,8 @@ settings.output_format = "PNG"
 settings.color_depth = "16"
 settings.mask_output_mode = "VISIBLE"
 settings.alpha_mode = "STRAIGHT"
+settings.mask_use_group_name = True
+settings.mask_use_group_color = True
 settings.write_report = True
 settings.photoshop_create_channels = True
 assert bpy.ops.cmask.scan() == {"FINISHED"}

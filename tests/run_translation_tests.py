@@ -37,6 +37,12 @@ try:
     assert bpy.app.translations.pgettext_iface(
         "Dynamic GN attributes require Blender 5.0 or newer"
     ) == "动态 GN 属性需要 Blender 5.0 或更高版本"
+    assert bpy.app.translations.pgettext_iface(
+        "One-Click Render + Masks + Photoshop"
+    ) == "一键导出渲染 + 蒙版 + Photoshop"
+    assert bpy.app.translations.pgettext_iface(
+        "Use Color ID Color for Masks"
+    ) == "蒙版使用 Color ID 颜色"
 finally:
     preferences.language = original_language
     preferences.use_translate_interface = original_interface

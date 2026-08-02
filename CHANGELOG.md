@@ -2,6 +2,14 @@
 
 All notable changes to Collection Mask Exporter are recorded here.
 
+## 0.8.0 - 2026-08-02
+
+- Name mask files, Photoshop layers, and Alpha channels after Collection groups.
+- Render mask RGB with the same per-group color used by the Color ID output.
+- Add one-click delivery for the beauty render, Color ID, masks, Photoshop JSX,
+  handoff manifest, export report, and optional compositor nodes.
+- Expose the one-click workflow to the Blender UI and background CLI.
+
 ## 0.7.0 - 2026-08-02
 
 - Limit the formal support matrix to Blender 4.5.x, 5.0.x, and 5.2.x.

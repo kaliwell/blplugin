@@ -7,6 +7,7 @@ import uuid
 
 ID_MATERIAL_NAME = "__CMASK_MATERIAL_ID"
 WHITE_MATERIAL_NAME = "__CMASK_MATERIAL_WHITE"
+MASK_MATERIAL_NAME = "__CMASK_MATERIAL_MASK"
 
 
 def ensure_material_node_tree(material):
@@ -22,7 +23,7 @@ def ensure_material_node_tree(material):
     return tree
 
 
-def _new_emission_material(prefix, use_object_color):
+def _new_emission_material(prefix, use_object_color, fixed_color=None):
     name = f"{prefix}_{uuid.uuid4().hex}"
     material = bpy.data.materials.new(name)
     tree = ensure_material_node_tree(material)
@@ -36,7 +37,9 @@ def _new_emission_material(prefix, use_object_color):
         info = nodes.new("ShaderNodeObjectInfo")
         links.new(info.outputs["Color"], emission.inputs["Color"])
     else:
-        emission.inputs["Color"].default_value = (1.0, 1.0, 1.0, 1.0)
+        emission.inputs["Color"].default_value = tuple(
+            fixed_color or (1.0, 1.0, 1.0, 1.0)
+        )
     links.new(emission.outputs["Emission"], output.inputs["Surface"])
     return material
 
@@ -47,6 +50,10 @@ def get_id_material():
 
 def get_white_material():
     return _new_emission_material(WHITE_MATERIAL_NAME, False)
+
+
+def get_mask_material(color):
+    return _new_emission_material(MASK_MATERIAL_NAME, False, color)
 
 
 def remove_temp_material(material):

@@ -40,15 +40,25 @@ settings.output_directory = str(output)
 settings.output_format = "PNG"
 settings.color_depth = "8"
 settings.write_report = True
-assert bpy.ops.cmask.export_all() == {"FINISHED"}
+assert bpy.ops.cmask.export_delivery() == {"FINISHED"}
 paths = [pathlib.Path(item.path) for item in settings.last_outputs]
-assert len(paths) == 3 and all(path.is_file() for path in paths)
+assert len(paths) == 4 and all(path.is_file() for path in paths)
+assert {path.parent.name for path in paths} == {"Render", "Color_ID", "Masks"}
+assert {path.stem for path in paths if path.parent.name == "Masks"} == {
+    "CM_Body", "CM_Detail",
+}
 assert len(list((output / "Reports").glob("*.json"))) == 1
 
-assert bpy.ops.cmask.create_photoshop_handoff() == {"FINISHED"}
 handoff = output / "Photoshop"
 assert len(list(handoff.glob("*.jsx"))) == 1
 assert len(list(handoff.glob("*_handoff.json"))) == 1
+with open(next(handoff.glob("*_handoff.json")), "r", encoding="utf-8") as handle:
+    manifest = __import__("json").load(handle)
+mask_layers = {
+    item["layer"] for item in manifest["outputs"]
+    if pathlib.Path(item["path"]).parent.name == "Masks"
+}
+assert mask_layers == {"CM_Body", "CM_Detail"}
 
 print("CMASK SAMPLE PROJECT TESTS PASSED")
 if registered_here:

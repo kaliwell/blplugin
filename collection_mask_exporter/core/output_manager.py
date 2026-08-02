@@ -44,6 +44,10 @@ def format_output_name(scene, settings, collection, mode, extension=None):
     return safe_filename(rendered) + extension
 
 
+def output_extension(settings):
+    return ".exr" if settings.output_format == "OPEN_EXR" else ".png"
+
+
 def resolved_output_root(scene, settings):
     raw = settings.output_directory or "//CMask_Output/"
     return os.path.abspath(bpy.path.abspath(raw, library=scene.library))
@@ -73,9 +77,22 @@ def color_id_path(scene, settings):
 
 def mask_path(scene, settings, collection_name):
     _, _, mask_dir = ensure_output_dirs(scene, settings)
+    if getattr(settings, "mask_use_group_name", True):
+        return os.path.join(
+            mask_dir, safe_filename(collection_name) + output_extension(settings)
+        )
     return os.path.join(mask_dir, format_output_name(
         scene, settings, collection_name, settings.mask_output_mode
     ))
+
+
+def beauty_path(scene, settings):
+    root, _color_dir, _mask_dir = ensure_output_dirs(scene, settings)
+    render_dir = os.path.join(root, "Render")
+    os.makedirs(render_dir, exist_ok=True)
+    return os.path.join(
+        render_dir, safe_filename(f"{blend_stem()}_render") + output_extension(settings)
+    )
 
 
 def multilayer_path(scene, settings):

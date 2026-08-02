@@ -70,6 +70,8 @@ class CMASK_PG_Preset(PropertyGroup):
     color_depth: StringProperty(default="8")
     edge_adjustment: IntProperty(default=0)
     alpha_mode: StringProperty(default="STRAIGHT")
+    mask_use_group_name: BoolProperty(default=True)
+    mask_use_group_color: BoolProperty(default=True)
     transparent_material_mode: StringProperty(default="INCLUDE")
     create_compositor_nodes: BoolProperty(default=False)
     photoshop_create_channels: BoolProperty(default=True)
@@ -138,9 +140,19 @@ class CMASK_PG_Settings(PropertyGroup):
     )
     alpha_mode: EnumProperty(
         name="Alpha Storage",
-        items=(("STRAIGHT", "Straight", "Keep white RGB with independent Alpha"),
+        items=(("STRAIGHT", "Straight", "Keep RGB independent from Alpha"),
                ("PREMULTIPLIED", "Premultiplied", "Multiply RGB by Alpha")),
         default="STRAIGHT",
+    )
+    mask_use_group_name: BoolProperty(
+        name="Use Group Names for Masks",
+        default=True,
+        description="Name each mask file and Photoshop layer after its Collection group",
+    )
+    mask_use_group_color: BoolProperty(
+        name="Use Color ID Color for Masks",
+        default=True,
+        description="Use the group's Color ID RGB while preserving the mask Alpha",
     )
     transparent_material_mode: EnumProperty(
         name="Transparent Materials",

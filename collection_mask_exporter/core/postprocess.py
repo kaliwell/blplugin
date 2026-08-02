@@ -50,7 +50,8 @@ def morph_alpha(alpha, width, height, amount):
     return result
 
 
-def apply_mask_postprocess(scene, filepath, amount, alpha_mode, preview=False):
+def apply_mask_postprocess(scene, filepath, amount, alpha_mode, preview=False,
+                           color=(1.0, 1.0, 1.0, 1.0)):
     loaded = False
     if preview or not filepath:
         image = bpy.data.images.get("Render Result")
@@ -64,13 +65,19 @@ def apply_mask_postprocess(scene, filepath, amount, alpha_mode, preview=False):
         pixels = array("f", [0.0]) * len(image.pixels)
         image.pixels.foreach_get(pixels)
         alpha = pixels[3::4]
+        strongest = max(range(len(alpha)), key=alpha.__getitem__)
+        strongest_offset = strongest * 4
+        rendered_color = (
+            tuple(pixels[strongest_offset:strongest_offset + 3])
+            if alpha[strongest] > 0.0 else tuple(color[:3])
+        )
         adjusted = morph_alpha(alpha, width, height, amount) if amount else alpha
         for index, value in enumerate(adjusted):
             offset = index * 4
-            color = value if alpha_mode == "PREMULTIPLIED" else 1.0
-            pixels[offset] = color
-            pixels[offset + 1] = color
-            pixels[offset + 2] = color
+            multiplier = value if alpha_mode == "PREMULTIPLIED" else 1.0
+            pixels[offset] = rendered_color[0] * multiplier
+            pixels[offset + 1] = rendered_color[1] * multiplier
+            pixels[offset + 2] = rendered_color[2] * multiplier
             pixels[offset + 3] = value
         image.pixels.foreach_set(pixels)
         image.update()

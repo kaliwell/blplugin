@@ -10,7 +10,7 @@ import uuid
 from .conflict_checker import validate_groups
 from .layer_collection import configure_group_layers, iter_layer_collections
 from .material_override import (
-    get_id_material, get_white_material, remove_temp_material,
+    get_id_material, get_mask_material, remove_temp_material,
 )
 from .postprocess import apply_mask_postprocess
 from .state_manager import capture_scene_state, restore_scene_state
@@ -306,6 +306,39 @@ def render_color_id(context, filepath=None, preview=False):
                        dynamic_resources=dynamic_resources)
 
 
+def render_beauty(context, filepath):
+    """Render the user's current scene while restoring all touched output state."""
+    scene = context.scene
+    settings = scene.cmask_settings
+    if not scene.camera:
+        raise RenderPipelineError(iface("The scene has no active camera"))
+    state = capture_scene_state(context)
+    try:
+        scene.render.filepath = filepath
+        scene.render.image_settings.file_format = settings.output_format
+        scene.render.image_settings.color_mode = "RGBA"
+        if settings.output_format == "PNG":
+            scene.render.image_settings.color_depth = (
+                settings.color_depth if settings.color_depth in {"8", "16"} else "16"
+            )
+        else:
+            scene.render.image_settings.color_depth = (
+                settings.color_depth if settings.color_depth in {"16", "32"} else "16"
+            )
+        bpy.ops.render.render(write_still=True)
+        return filepath
+    finally:
+        errors = restore_scene_state(context, state)
+        if errors:
+            message = "；".join(errors)
+            if sys.exc_info()[0] is not None:
+                print(f"CMask 正式渲染恢复警告：{message}")
+            else:
+                raise RenderPipelineError(
+                    f"正式渲染完成，但场景恢复不完整：{message}"
+                )
+
+
 def render_mask(context, target, filepath=None, preview=False):
     scene = context.scene
     settings = scene.cmask_settings
@@ -347,7 +380,12 @@ def render_mask(context, target, filepath=None, preview=False):
                            settings.transparent_material_mode,
                            geometry_nodes_split_sources=
                            settings.geometry_nodes_split_sources)
-        material = get_white_material()
+        mask_color = (
+            tuple(target.color)
+            if getattr(settings, "mask_use_group_color", True)
+            else (1.0, 1.0, 1.0, 1.0)
+        )
+        material = get_mask_material(mask_color)
         layer.material_override = material
         _apply_material_to_objects(resolution, material)
         if filepath:
@@ -356,7 +394,7 @@ def render_mask(context, target, filepath=None, preview=False):
                               layer=layer.name)
         apply_mask_postprocess(
             scene, filepath, settings.edge_adjustment, settings.alpha_mode,
-            preview=preview,
+            preview=preview, color=mask_color,
         )
         return filepath
     finally:

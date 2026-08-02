@@ -72,6 +72,8 @@ class CMASK_PT_MainPanel(bpy.types.Panel):
         box.prop(settings, "color_depth")
         box.prop(settings, "edge_adjustment")
         box.prop(settings, "alpha_mode")
+        box.prop(settings, "mask_use_group_name")
+        box.prop(settings, "mask_use_group_color")
         box.prop(settings, "transparent_material_mode")
         box.prop(settings, "geometry_nodes_split_sources")
         box.operator("cmask.configure_geometry_nodes_split", icon="GEOMETRY_NODES")
@@ -96,6 +98,7 @@ class CMASK_PT_MainPanel(bpy.types.Panel):
 
         box = layout.box()
         box.label(text="Render and Export")
+        box.operator("cmask.export_delivery", icon="RENDER_STILL")
         row = box.row()
         row.enabled = not settings.geometry_nodes_split_sources
         row.operator("cmask.preview_color_id", icon="RENDER_STILL")

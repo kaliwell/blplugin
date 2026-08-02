@@ -7,11 +7,14 @@ import os
 import tempfile
 
 from ..core.output_manager import (
-    color_id_path, cryptomatte_path, disambiguate_path, mask_path, multilayer_path,
-    unique_mask_paths,
+    beauty_path, color_id_path, cryptomatte_path, disambiguate_path, mask_path,
+    multilayer_path, unique_mask_paths,
 )
-from ..core.render_pipeline import RenderPipelineError, render_color_id, render_mask
+from ..core.render_pipeline import (
+    RenderPipelineError, render_beauty, render_color_id, render_mask,
+)
 from ..core.report_manager import write_export_report
+from ..core.photoshop import write_photoshop_handoff
 from ..core.compositor import create_compositor_image_nodes
 from ..core.multilayer import combine_multilayer_exr
 from ..core.cryptomatte import combine_collection_cryptomatte
@@ -186,6 +189,52 @@ class CMASK_OT_ExportAll(_CMaskRenderOperator, bpy.types.Operator):
         return self.run_guarded(context, export_all)
 
 
+class CMASK_OT_ExportDelivery(_CMaskRenderOperator, bpy.types.Operator):
+    bl_idname = "cmask.export_delivery"
+    bl_label = "One-Click Render + Masks + Photoshop"
+    bl_description = (
+        "Export the beauty render, Color ID, group-colored masks, and Photoshop JSX"
+    )
+    report_operation = "delivery"
+
+    def execute(self, context):
+        scene = context.scene
+        settings = scene.cmask_settings
+
+        def export_delivery():
+            targets = [
+                item for item in settings.groups
+                if item.enabled and item.role == "MASK" and item.collection
+            ]
+            if not targets:
+                raise RenderPipelineError(iface(
+                    "No MASK group is available for export"
+                ))
+            outputs = []
+            self._partial_outputs = outputs
+
+            render_path = beauty_path(scene, settings)
+            render_beauty(context, render_path)
+            outputs.append(render_path)
+
+            id_path = color_id_path(scene, settings)
+            render_color_id(context, id_path)
+            outputs.append(id_path)
+
+            for item, path in unique_mask_paths(scene, settings, targets):
+                render_mask(context, item, path)
+                outputs.append(path)
+
+            jsx_path, _manifest_path, _psd_path = write_photoshop_handoff(
+                scene, settings, outputs=outputs
+            )
+            return iface(
+                "One-click delivery complete: render, Color ID, {count} masks; Photoshop script: {jsx}"
+            ).format(count=len(targets), jsx=jsx_path), outputs
+
+        return self.run_guarded(context, export_delivery)
+
+
 class CMASK_OT_ExportMultilayerEXR(_CMaskRenderOperator, bpy.types.Operator):
     bl_idname = "cmask.export_multilayer_exr"
     bl_label = "Export Multilayer EXR"
@@ -355,6 +404,7 @@ CLASSES = (
     CMASK_OT_ExportSelectedMask,
     CMASK_OT_ExportAllMasks,
     CMASK_OT_ExportAll,
+    CMASK_OT_ExportDelivery,
     CMASK_OT_ExportMultilayerEXR,
     CMASK_OT_ExportCryptomatte,
     CMASK_OT_ExportBatch,

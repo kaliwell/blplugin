@@ -1,6 +1,6 @@
 # CMask 命令行与渲染农场
 
-> 适用版本：CMask v0.7.0+，Blender 4.5.x、5.0.x、5.2.x
+> 适用版本：CMask v0.8.0+，Blender 4.5.x、5.0.x、5.2.x
 
 ## 1. 基本调用
 
@@ -34,6 +34,7 @@
 | `selected-mask` | 指定 Collection 蒙版，配合 `--collection` |
 | `all-masks` | 全部启用的 MASK |
 | `all` | 彩色 ID 与全部 MASK |
+| `delivery` | 正式渲染、Color ID、全部 MASK、Photoshop JSX 与交接清单 |
 | `multilayer` | 单文件 Multilayer EXR |
 | `cryptomatte` | Collection Cryptomatte |
 | `batch` | 按相机和帧设置批量导出 |
@@ -91,7 +92,8 @@
 ```
 
 任务文件支持所有场景设置字段，包括 `conflict_mode`、`edge_adjustment`、
-`alpha_mode`、`transparent_material_mode`、`filename_template`、
+`alpha_mode`、`mask_use_group_name`、`mask_use_group_color`、
+`transparent_material_mode`、`filename_template`、
 `multilayer_include_color_id`、`cryptomatte_depth` 和
 `geometry_nodes_split_sources`。未知字段会直接报错，
 避免拼写错误被静默忽略。

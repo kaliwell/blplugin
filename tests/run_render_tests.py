@@ -89,6 +89,21 @@ def opaque_color_spread(path):
         bpy.data.images.remove(image)
 
 
+def closest_opaque_rgb(path, expected):
+    image = bpy.data.images.load(path, check_existing=False)
+    try:
+        pixels = list(image.pixels)
+        colors = [tuple(pixels[index:index + 3])
+                  for index in range(0, len(pixels), 4)
+                  if pixels[index + 3] > 0.99]
+        assert colors, "Expected opaque pixels"
+        return min(colors, key=lambda color: sum(
+            abs(color[channel] - expected[channel]) for channel in range(3)
+        ))
+    finally:
+        bpy.data.images.remove(image)
+
+
 def fractional_rgba(path):
     image = bpy.data.images.load(path, check_existing=False)
     try:
@@ -178,8 +193,14 @@ settings.mask_output_mode = "VISIBLE"
 visible_path = mask_path(scene, settings, target.collection.name)
 render_mask(bpy.context, target, visible_path)
 assert os.path.isfile(visible_path) and os.path.getsize(visible_path) > 100
+assert pathlib.Path(visible_path).stem == target.collection.name
 visible_alpha = alpha_range(visible_path)
 assert visible_alpha[1] > 0.99 and visible_alpha[0] < 0.01
+mask_rgb = closest_opaque_rgb(visible_path, target.color)
+id_rgb = closest_opaque_rgb(id_path, target.color)
+assert max(abs(mask_rgb[index] - id_rgb[index]) for index in range(3)) < 0.03, (
+    tuple(target.color), mask_rgb, id_rgb
+)
 print("PASS visible mask render", visible_path)
 
 settings.mask_output_mode = "SILHOUETTE"
@@ -191,13 +212,15 @@ assert silhouette_alpha[2] > visible_alpha[2] + 5.0
 print("PASS silhouette mask render", silhouette_path)
 
 straight_sample = fractional_rgba(silhouette_path)
-assert min(straight_sample[:3]) > 0.95
+assert max(abs(straight_sample[index] - id_rgb[index])
+           for index in range(3)) < 0.03
 settings.alpha_mode = "PREMULTIPLIED"
 premultiplied_path = str(output / "premultiplied.png")
 render_mask(bpy.context, target, premultiplied_path)
 premultiplied_sample = fractional_rgba(premultiplied_path)
-assert max(abs(channel - premultiplied_sample[3])
-           for channel in premultiplied_sample[:3]) < 0.05
+assert max(abs(premultiplied_sample[index] -
+               id_rgb[index] * premultiplied_sample[3])
+           for index in range(3)) < 0.05
 assert max(premultiplied_sample[:3]) < 0.9
 settings.alpha_mode = "STRAIGHT"
 print("PASS straight and premultiplied alpha")
@@ -321,6 +344,8 @@ with open(reports[0], "r", encoding="utf-8") as handle:
     report = json.load(handle)
 assert report["success"] is True and report["color_depth"] == "16"
 assert report["alpha_mode"] == "STRAIGHT"
+assert report["mask_use_group_name"] is True
+assert report["mask_use_group_color"] is True
 assert report["transparent_material_mode"] == "INCLUDE"
 assert expected_16_bit in report["outputs"]
 assert report["create_compositor_nodes"] is True
@@ -347,7 +372,8 @@ assert user_named_material.node_tree.nodes.get("UserSentinel") is not None
 assert not any(layer.name.startswith(TEMP_VIEW_LAYER + "_")
                for layer in scene.view_layers)
 assert not any(material.name.startswith("__CMASK_MATERIAL_ID_") or
-               material.name.startswith("__CMASK_MATERIAL_WHITE_")
+               material.name.startswith("__CMASK_MATERIAL_WHITE_") or
+               material.name.startswith("__CMASK_MATERIAL_MASK_")
                for material in bpy.data.materials)
 print("PASS state restoration")
 

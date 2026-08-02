@@ -63,6 +63,23 @@ with tempfile.TemporaryDirectory(prefix="cmask-cli-test-") as temp:
         stored = json.load(handle)
     assert stored["success"] is True and stored["outputs"] == result["outputs"]
 
+    delivery_root = os.path.join(temp, "delivery")
+    delivery = main([
+        "--operation", "delivery",
+        "--output", delivery_root,
+        "--no-report",
+    ], exit_on_error=False)
+    assert delivery["success"] is True
+    assert delivery["operation"] == "delivery"
+    assert len(delivery["outputs"]) == 3
+    assert all(os.path.isfile(path) for path in delivery["outputs"])
+    assert os.path.basename(next(
+        path for path in delivery["outputs"]
+        if os.path.basename(os.path.dirname(path)) == "Masks"
+    )) == "CM_CLI.png"
+    photoshop_dir = os.path.join(delivery_root, "Photoshop")
+    assert any(name.endswith("_import.jsx") for name in os.listdir(photoshop_dir))
+
     failed_path = os.path.join(temp, "failed.json")
     failed = main([
         "--operation", "selected-mask",

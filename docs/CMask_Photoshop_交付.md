@@ -1,25 +1,28 @@
 # CMask Photoshop 交付
 
-CMask v0.4.3 可以把 Blender 的最近一次输出整理成 Photoshop 分层文件和
+CMask 可以把 Blender 的输出整理成 Photoshop 分层文件和
 独立 Alpha 通道。
 Blender 负责生成 JSX 和交接清单，Photoshop 负责读取图片并写出 PSD，因此
 不需要额外的 PSD Python 库。
 
 ## 使用步骤
 
-1. 在 CMask 面板完成“全部导出”或“批量导出”。
-2. 确认面板状态显示导出成功。
-3. 点击“生成 Photoshop 导入脚本”。
+1. 保持“蒙版使用组名”和“蒙版使用 Color ID 颜色”开启。
+2. 点击“一键导出渲染 + 蒙版 + Photoshop”。
+3. 确认面板状态显示导出成功。
 4. 打开 Photoshop，选择“文件 → 脚本 → 浏览”。
 5. 选择输出目录 `Photoshop` 内的 `*_import.jsx`。
 
+一键操作会先生成正式渲染、Color ID 和全部 MASK，再自动生成 JSX 与交接清单。
+也可以沿用“全部导出 → 生成 Photoshop 导入脚本”的分步工作流。
+
 脚本会关闭交互式格式提示，逐一打开输出文件，将它们复制到同一文档：
 
-- `Color_ID` 目录中的文件命名为 `Color ID - 原文件名`。
-- `Masks` 目录中的文件命名为 `Mask - 原文件名`。
-- 其他输出使用原文件名作为图层名。
+- `Render` 目录中的正式渲染图层命名为 `Render`。
+- `Color_ID` 目录中的文件命名为 `Color ID`。
+- `Masks` 目录中的文件、图层直接使用 Collection 组名。
 - 启用“Photoshop 创建 Alpha 通道”时，每个 Mask 图层的透明度会保存为
-  `CMask - 原文件名` Alpha 通道，重名会自动追加数字。
+  同组名 Alpha 通道，重名会自动追加数字。
 
 完成后脚本自动保存 `*_cmask_photoshop.psd`，并显示导入图层数量和路径。
 
@@ -38,7 +41,8 @@ CMask_Output/
 
 ## 注意事项
 
-- 生成操作只使用“最近输出”，不会重新渲染。
+- 单独点击“生成 Photoshop 导入脚本”只使用最近输出，不会重新渲染；一键交付
+  会重新生成正式渲染、Color ID 和全部蒙版。
 - 移动或删除源 PNG/EXR 后，脚本会明确报告缺失路径并停止。
 - 一批图层应具有相同分辨率、颜色模式和位深；CMask 同一次导出默认满足此条件。
 - Photoshop 是否能打开 OpenEXR 取决于所安装版本和格式支持；通用交付建议使用

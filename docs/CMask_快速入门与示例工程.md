@@ -22,8 +22,9 @@ Photoshop Alpha 通道和相对输出目录 `//CMask_Demo_Output/`。
 2. 点击“检查场景”，确认没有错误。
 3. 点击“预览彩色 ID”，观察两个 MASK 组颜色和遮挡/挖空效果。
 4. 选中 `CM_Body` 或 `CM_Detail`，点击“预览选中组蒙版”。
-5. 点击“全部导出”。输出目录会出现彩色 ID、两张蒙版和 JSON 报告。
-6. 点击“生成 Photoshop 导入脚本”。
+5. 保持“蒙版使用组名”和“蒙版使用 Color ID 颜色”开启。
+6. 点击“一键导出渲染 + 蒙版 + Photoshop”。输出目录会出现正式渲染、
+   Color ID、`CM_Body.png`、`CM_Detail.png`、JSON 报告和 JSX。
 7. 在 Photoshop 选择“文件 → 脚本 → 浏览”，运行生成的 JSX；脚本会建立
    命名图层、Alpha 通道并保存 PSD。
 
@@ -34,7 +35,8 @@ Photoshop Alpha 通道和相对输出目录 `//CMask_Demo_Output/`。
 属于多个启用组时，应在列表调整优先级，或启用严格模式后按检查结果整理场景。
 
 建议正式交付前依次验证彩色 ID、VISIBLE 蒙版和 SILHOUETTE 蒙版，并保留
-JSON 报告。动画或多相机项目应把 `{camera}` 与 `{frame}` 加入命名模板。
+JSON 报告。启用组名命名时，单次蒙版文件名始终等于 Collection 组名；批量
+相机/帧若发生同名路径，会自动追加相机与帧后缀。
 
 ## 重新生成示例
 
