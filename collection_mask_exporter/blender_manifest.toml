@@ -1,9 +1,9 @@
 schema_version = "1.0.0"
 id = "collection_mask_exporter"
-version = "0.9.0"
+version = "0.9.1"
 name = "Collection Mask Exporter"
 tagline = "Export stable Collection IDs and per-Collection masks"
-maintainer = "CMask Contributors"
+maintainer = "kaliwill <3448237037@qq.com>"
 type = "add-on"
 blender_version_min = "4.5.0"
 license = ["SPDX:GPL-3.0-or-later"]

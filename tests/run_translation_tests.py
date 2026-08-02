@@ -56,6 +56,16 @@ try:
     assert bpy.app.translations.pgettext_iface(
         "Alpha Storage"
     ) == "透明度存储方式"
+    expected_panel_titles = {
+        "Scan and Groups": "扫描与组",
+        "Validation": "检查与诊断",
+        "Geometry Nodes Settings": "Geometry Nodes 设置",
+        "One-Click Delivery": "一键交付",
+        "Individual Exports": "单项导出",
+        "Advanced Output": "高级输出",
+    }
+    for source, translated in expected_panel_titles.items():
+        assert bpy.app.translations.pgettext_iface(source) == translated
 finally:
     preferences.language = original_language
     preferences.use_translate_interface = original_interface

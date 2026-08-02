@@ -750,7 +750,7 @@ def test_compatibility_diagnostic():
         "layer_collection_flags", "material_node_tree", "openimageio",
     }
     path, written = write_compatibility_report(scene, settings)
-    assert Path(path).is_file() and written["addon_version"] == "0.9.0"
+    assert Path(path).is_file() and written["addon_version"] == "0.9.1"
     with open(path, "r", encoding="utf-8") as handle:
         assert json.load(handle)["blender_version"] == bpy.app.version_string
     assert bpy.ops.cmask.compatibility_report() == {"FINISHED"}

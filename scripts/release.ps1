@@ -31,6 +31,31 @@ function Invoke-Blender {
     }
 }
 
+function Invoke-BlenderPython {
+    param(
+        [string]$Executable,
+        [string[]]$Arguments,
+        [string]$SuccessMarker
+    )
+    if (-not (Test-Path -LiteralPath $Executable -PathType Leaf)) {
+        throw "Blender executable not found: $Executable"
+    }
+    $pythonArguments = @("--python-exit-code", "1") + @($Arguments)
+    $output = & $Executable @pythonArguments 2>&1
+    $exitCode = $LASTEXITCODE
+    $output | ForEach-Object { Write-Host $_ }
+    $outputText = $output -join "`n"
+    if ($exitCode -ne 0) {
+        throw "Blender Python exited with code $exitCode`: $Executable $pythonArguments"
+    }
+    if ($outputText -match "(?m)^Traceback \(most recent call last\):") {
+        throw "Blender Python emitted a traceback: $Executable $pythonArguments"
+    }
+    if (-not $outputText.Contains($SuccessMarker)) {
+        throw "Blender Python did not emit success marker '$SuccessMarker': $Executable $pythonArguments"
+    }
+}
+
 $matrix = @(
     @{ Label = "4.5"; Exe = $Blender45 },
     @{ Label = "5.0"; Exe = $Blender50 },
@@ -42,39 +67,39 @@ try {
     if (-not $SkipTests) {
         foreach ($entry in $matrix) {
             Write-Host "== Core $($entry.Label) =="
-            Invoke-Blender $entry.Exe @(
+            Invoke-BlenderPython $entry.Exe @(
                 "--background", "--factory-startup", "--python", "tests\run_core_tests.py"
-            )
+            ) "CMASK CORE TESTS PASSED"
             Write-Host "== Translation $($entry.Label) =="
-            Invoke-Blender $entry.Exe @(
+            Invoke-BlenderPython $entry.Exe @(
                 "--background", "--factory-startup", "--python", "tests\run_translation_tests.py"
-            )
+            ) "CMASK TRANSLATION TESTS PASSED"
             Write-Host "== Panel $($entry.Label) =="
-            Invoke-Blender $entry.Exe @(
+            Invoke-BlenderPython $entry.Exe @(
                 "--background", "--factory-startup", "--python", "tests\run_panel_api_tests.py"
-            )
+            ) "CMASK FULL PANEL DRAW TESTS PASSED"
             Write-Host "== CLI $($entry.Label) =="
-            Invoke-Blender $entry.Exe @(
+            Invoke-BlenderPython $entry.Exe @(
                 "--background", "--factory-startup", "--python", "tests\run_cli_tests.py"
-            )
+            ) "CMASK CLI TESTS PASSED"
             Write-Host "== Sample project $($entry.Label) =="
-            Invoke-Blender $entry.Exe @(
+            Invoke-BlenderPython $entry.Exe @(
                 "--factory-startup", "examples\CMask_Demo.blend", "--background", "--python",
                 "tests\run_sample_project_tests.py"
-            )
+            ) "CMASK SAMPLE PROJECT TESTS PASSED"
             if ($FullRenderMatrix) {
                 Write-Host "== Full render $($entry.Label) =="
-                Invoke-Blender $entry.Exe @(
+                Invoke-BlenderPython $entry.Exe @(
                     "--background", "--factory-startup", "--python", "tests\run_render_tests.py"
-                )
+                ) "CMASK RENDER TESTS PASSED"
             }
         }
         foreach ($entry in $matrix | Where-Object { $_.Label -ne "4.5" }) {
             Write-Host "== Dynamic GN $($entry.Label) =="
-            Invoke-Blender $entry.Exe @(
+            Invoke-BlenderPython $entry.Exe @(
                 "--background", "--factory-startup", "--python",
                 "tests\run_dynamic_geometry_tests.py"
-            )
+            ) "CMASK DYNAMIC GEOMETRY TESTS PASSED"
         }
     }
 
@@ -111,9 +136,9 @@ try {
                 "--command", "extension", "install-file", "-r", "user_default",
                 "-e", $package
             )
-            Invoke-Blender $entry.Exe @(
+            Invoke-BlenderPython $entry.Exe @(
                 "--background", "--python", "scripts\smoke_installed_extension.py"
-            )
+            ) "CMASK INSTALLED ZIP SMOKE TEST PASSED"
         }
         finally {
             $env:BLENDER_USER_CONFIG = $oldConfig

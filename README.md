@@ -1,6 +1,6 @@
 # Collection Mask Exporter (CMask)
 
-当前开发版本：v0.9.0。更新扩展后需要完整退出并重新启动 Blender，
+当前开发版本：v0.9.1。更新扩展后需要完整退出并重新启动 Blender，
 否则旧 Python 模块可能继续驻留在当前进程中。
 
 面向 Blender 4.5.x、5.0.x、5.2.x 的 Collection 蒙版导出扩展，当前已经包含：
@@ -146,6 +146,9 @@ v0.8.1 补齐 Blender `Operator` 翻译上下文，修复按钮仍显示英文�
 
 v0.9.0 将单一长侧栏重构为 Blender 原生父级/子级面板；扫描与组、输出设置、
 一键交付默认展开，预设、检查、Geometry Nodes、批量、单项导出和高级输出默认折叠。
+
+v0.9.1 加固发布矩阵：Blender Python 异常、Traceback 或缺少测试成功标志都会
+立即阻止打包；同时补齐 v0.9.0 CHANGELOG、子面板翻译回归和维护者元数据。
 
 命令行与渲染农场用法见 `docs/CMask_命令行与渲染农场.md`。
 Photoshop 交付用法见 `docs/CMask_Photoshop_交付.md`。

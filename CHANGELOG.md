@@ -2,6 +2,22 @@
 
 All notable changes to Collection Mask Exporter are recorded here.
 
+## 0.9.1 - 2026-08-02
+
+- Make the release matrix fail on Blender Python exceptions, emitted tracebacks,
+  and missing per-suite success markers.
+- Add explicit Simplified Chinese regression checks for every v0.9 panel title.
+- Publish explicit maintainer contact information in the extension manifest.
+
+## 0.9.0 - 2026-08-02
+
+- Replace the single long sidebar with one parent and nine native collapsible
+  Blender child panels.
+- Keep scan/groups, output settings, and one-click delivery open by default;
+  collapse presets, validation, Geometry Nodes, batch, individual exports, and
+  advanced output by default.
+- Add Simplified Chinese translations for every new child-panel title.
+
 ## 0.8.1 - 2026-08-02
 
 - Register Simplified Chinese strings for Blender's dedicated `Operator`

@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 kaliwill
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-ADDON_VERSION = (0, 9, 0)
+ADDON_VERSION = (0, 9, 1)
 SUPPORTED_BLENDER_LINES = {(4, 5), (5, 0), (5, 2)}
 SUPPORTED_OBJECT_TYPES = {
     "MESH", "CURVE", "SURFACE", "FONT", "META", "VOLUME", "POINTCLOUD",
