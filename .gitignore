@@ -1,0 +1,21 @@
+# Local Blender installations and generated release artifacts
+/blendertestversion/
+/dist/
+
+# User/output workspaces
+/1/
+/testfloders1/
+/未命名*.blend*
+/CMask_*_Output/
+
+# Python and Blender caches
+__pycache__/
+*.py[cod]
+*.blend1
+*.blend2
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
