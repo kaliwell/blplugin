@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 kaliwill
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from .panel import CLASSES as PANEL_CLASSES
 from .ui_list import CLASSES as LIST_CLASSES
 from .outliner import register_outliner_menu, unregister_outliner_menu

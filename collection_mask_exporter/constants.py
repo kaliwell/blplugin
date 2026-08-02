@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 kaliwill
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 ADDON_VERSION = (0, 7, 0)
 SUPPORTED_BLENDER_LINES = {(4, 5), (5, 0), (5, 2)}
 SUPPORTED_OBJECT_TYPES = {

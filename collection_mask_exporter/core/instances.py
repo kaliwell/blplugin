@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 kaliwill
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 def is_collection_instance(obj):
     return (
         obj is not None and obj.type == "EMPTY" and

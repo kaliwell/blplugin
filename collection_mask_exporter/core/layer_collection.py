@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 kaliwill
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 def iter_layer_collections(root):
     yield root
     for child in root.children:

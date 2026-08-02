@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 kaliwill
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from .operators import CLASSES as OPERATOR_CLASSES
 from .properties import register_properties, unregister_properties
 from .ui import CLASSES as UI_CLASSES

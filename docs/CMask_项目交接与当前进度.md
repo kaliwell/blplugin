@@ -44,6 +44,7 @@ D:\blplugin\dist\collection_mask_exporter-0.7.0-SHA256.txt
 | 中英文界面 | 已完成 | 跟随 Blender，兼容 `zh_CN` 与 `zh_HANS` |
 | Photoshop 自动交付 | 已完成并实机验证 | v0.6.6：6 图层、5 Alpha、PSD 保存通过 |
 | CLI / 渲染农场 | 已完成 | JSON 任务、结果 JSON、诊断操作 |
+| 发布许可证与版权 | 已完成 | GPL-3.0-or-later、第三方清单、53 个 Python 文件 SPDX 头 |
 | Blender 6.0 正式版认证 | 待执行 | 正式版尚未纳入当前实机矩阵 |
 
 ## 3. 最近版本变更

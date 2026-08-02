@@ -124,6 +124,8 @@ try {
         New-Item -ItemType Directory -Path $stage | Out-Null
         Copy-Item -LiteralPath (Join-Path $projectRoot "README.md") -Destination $stage
         Copy-Item -LiteralPath (Join-Path $projectRoot "CHANGELOG.md") -Destination $stage
+        Copy-Item -LiteralPath (Join-Path $projectRoot "LICENSE") -Destination $stage
+        Copy-Item -LiteralPath (Join-Path $projectRoot "THIRD_PARTY_LICENSES.md") -Destination $stage
         Copy-Item -LiteralPath (Join-Path $projectRoot "docs") -Destination $stage -Recurse
         Copy-Item -LiteralPath (Join-Path $projectRoot "examples") -Destination $stage -Recurse
         $stageDist = Join-Path $stage "dist"

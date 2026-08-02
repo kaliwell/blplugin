@@ -167,3 +167,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\release.ps1
 
 开发期间可将 `collection_mask_exporter` 目录打包为 ZIP，然后在 Blender 的
 “首选项 → 扩展 → 从磁盘安装”中选择该 ZIP。
+
+## 许可证与版权
+
+CMask 版权归 `kaliwill` 及各贡献者所有，采用
+`GNU General Public License v3.0 or later`（SPDX：`GPL-3.0-or-later`）发布。
+完整条款见 [LICENSE](LICENSE)，运行时及测试相关的第三方软件说明见
+[THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)。
+
+所有 Python 源文件均包含 SPDX 版权与许可证声明。Blender、Python、
+OpenImageIO 和 Adobe Photoshop 不随本项目打包，分别受其自身许可证或使用
+条款约束。

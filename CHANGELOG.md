@@ -10,6 +10,8 @@ All notable changes to Collection Mask Exporter are recorded here.
 - Rebuild and verify the sample project with Blender 4.5.
 - Validate core, UI, translation, sample-project, PNG, OpenEXR, Multilayer EXR,
   Cryptomatte, and batch rendering on every supported version line.
+- Add the GPL-3.0-or-later license text, third-party runtime notices, and SPDX
+  copyright/license headers to every Python source file.
 
 ## 0.6.0 - 0.6.6 - 2026-08-01 to 2026-08-02
 

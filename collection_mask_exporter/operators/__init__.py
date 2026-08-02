@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 kaliwill
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from .scan import CLASSES as SCAN_CLASSES
 from .validate import CLASSES as VALIDATE_CLASSES
 from .export import CLASSES as EXPORT_CLASSES

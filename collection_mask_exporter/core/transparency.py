@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 kaliwill
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from .instances import instance_source_objects, is_collection_instance
 from .geometry_nodes import geometry_node_dependencies, is_geometry_nodes_object
 

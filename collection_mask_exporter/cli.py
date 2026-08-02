@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 kaliwill
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Background/ render-farm entry point for Collection Mask Exporter."""
 
 import argparse

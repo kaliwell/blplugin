@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 kaliwill
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Run the CMask export workflow against an already opened .blend file."""
 
 import importlib
