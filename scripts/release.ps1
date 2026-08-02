@@ -94,6 +94,7 @@ try {
 
     $oldConfig = $env:BLENDER_USER_CONFIG
     $oldScripts = $env:BLENDER_USER_SCRIPTS
+    $oldExtensions = $env:BLENDER_USER_EXTENSIONS
     foreach ($entry in $matrix) {
         $smokeRoot = Join-Path ([System.IO.Path]::GetTempPath()) (
             "cmask-smoke-$($entry.Label)-" + [guid]::NewGuid().ToString("N")
@@ -102,8 +103,10 @@ try {
             Write-Host "== Clean install $($entry.Label) =="
             $env:BLENDER_USER_CONFIG = Join-Path $smokeRoot "config"
             $env:BLENDER_USER_SCRIPTS = Join-Path $smokeRoot "scripts"
+            $env:BLENDER_USER_EXTENSIONS = Join-Path $smokeRoot "extensions"
             New-Item -ItemType Directory -Path $env:BLENDER_USER_CONFIG -Force | Out-Null
             New-Item -ItemType Directory -Path $env:BLENDER_USER_SCRIPTS -Force | Out-Null
+            New-Item -ItemType Directory -Path $env:BLENDER_USER_EXTENSIONS -Force | Out-Null
             Invoke-Blender $entry.Exe @(
                 "--command", "extension", "install-file", "-r", "user_default",
                 "-e", $package
@@ -115,6 +118,7 @@ try {
         finally {
             $env:BLENDER_USER_CONFIG = $oldConfig
             $env:BLENDER_USER_SCRIPTS = $oldScripts
+            $env:BLENDER_USER_EXTENSIONS = $oldExtensions
             if (Test-Path -LiteralPath $smokeRoot) {
                 [System.IO.Directory]::Delete($smokeRoot, $true)
             }

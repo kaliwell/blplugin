@@ -1,7 +1,7 @@
 # CMask 项目交接与当前进度
 
 > 交接日期：2026-08-02
-> 当前版本：v0.8.0
+> 当前版本：v0.8.1
 > 项目目录：`D:\blplugin`
 > 正式支持：Blender 4.5.x、5.0.x、5.2.x
 > 最新验证矩阵：Blender 4.5.12 LTS、5.0.1、5.2.0 LTS
@@ -9,21 +9,21 @@
 ## 1. 交接结论
 
 Collection Mask Exporter 当前已经形成可安装、可使用、可测试的完整 Blender
-Extension。以 v0.8.0 已定义的功能范围计算，核心交付流程已完成；剩余工作主要是
+Extension。以 v0.8.1 已定义的功能范围计算，核心交付流程已完成；剩余工作主要是
 Blender 6.0 正式版发布后的实机认证、更多动态 Geometry Nodes 数据域，以及持续的
 UI/Photoshop 跨版本兼容维护。
 
 当前可直接交付的安装包与完整交付包：
 
 ```text
-D:\blplugin\dist\collection_mask_exporter-0.8.0.zip
-D:\blplugin\dist\collection_mask_exporter-0.8.0-release.zip
+D:\blplugin\dist\collection_mask_exporter-0.8.1.zip
+D:\blplugin\dist\collection_mask_exporter-0.8.1-release.zip
 ```
 
 对应 SHA256 统一记录在：
 
 ```text
-D:\blplugin\dist\collection_mask_exporter-0.8.0-SHA256.txt
+D:\blplugin\dist\collection_mask_exporter-0.8.1-SHA256.txt
 ```
 
 最终安装 ZIP 已分别通过 Blender 4.5、5.0、5.2 的清单验证，以及隔离用户配置下
@@ -104,6 +104,12 @@ D:\blplugin\dist\collection_mask_exporter-0.8.0-SHA256.txt
 - 新增“一键导出渲染 + 蒙版 + Photoshop”：正式渲染、Color ID、全部 MASK、
   JSX、交接清单和 JSON 报告一次完成。
 - CLI 新增 `delivery` 操作。
+
+### v0.8.1
+
+- 补齐 Blender `Operator` 专用翻译上下文，修复面板按钮仍显示英文。
+- 翻译面板标题并优化透明度存储标签。
+- 未实际保存的旧 `Default Preset` 占位迁移为语言中性的 `CMask`。
 
 ## 4. 关键工作流
 
@@ -266,12 +272,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\release.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\release.ps1 -FullRenderMatrix
 ```
 
-v0.8.0 当前发布产物：
+v0.8.1 当前发布产物：
 
-- `dist/collection_mask_exporter-0.8.0.zip`：Blender 从磁盘安装包。
-- `dist/collection_mask_exporter-0.8.0-release.zip`：README、CHANGELOG、全部文档、
+- `dist/collection_mask_exporter-0.8.1.zip`：Blender 从磁盘安装包。
+- `dist/collection_mask_exporter-0.8.1-release.zip`：README、CHANGELOG、全部文档、
   示例工程和安装包组成的完整交付包。
-- `dist/collection_mask_exporter-0.8.0-SHA256.txt`：上述两个 ZIP 的 SHA256。
+- `dist/collection_mask_exporter-0.8.1-SHA256.txt`：上述两个 ZIP 的 SHA256。
 
 ## 10. 已知边界与风险
 

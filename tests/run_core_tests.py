@@ -602,6 +602,21 @@ def test_scene_presets_round_trip():
     assert len(settings.presets) == 0
 
 
+def test_default_preset_placeholder_migration():
+    from collection_mask_exporter.properties import migrate_default_preset_names
+    scene = reset_scene()
+    settings = scene.cmask_settings
+    settings.preset_name = "Default Preset"
+    migrate_default_preset_names()
+    assert settings.preset_name == "CMask"
+
+    stored = settings.presets.add()
+    stored.name = "Default Preset"
+    settings.preset_name = "Default Preset"
+    migrate_default_preset_names()
+    assert settings.preset_name == "Default Preset"
+
+
 def test_outliner_manual_add_operator():
     scene = reset_scene()
     scanned = bpy.data.collections.new("CM_Scanned")
@@ -735,7 +750,7 @@ def test_compatibility_diagnostic():
         "layer_collection_flags", "material_node_tree", "openimageio",
     }
     path, written = write_compatibility_report(scene, settings)
-    assert Path(path).is_file() and written["addon_version"] == "0.8.0"
+    assert Path(path).is_file() and written["addon_version"] == "0.8.1"
     with open(path, "r", encoding="utf-8") as handle:
         assert json.load(handle)["blender_version"] == bpy.app.version_string
     assert bpy.ops.cmask.compatibility_report() == {"FINISHED"}
@@ -760,6 +775,7 @@ for test in (test_scan_and_stable_color, test_nested_explicit_child_wins,
              test_cli_job_resolution,
              test_incremental_sync_preserves_rows_and_selection,
              test_scene_presets_round_trip,
+             test_default_preset_placeholder_migration,
              test_outliner_manual_add_operator,
              test_transparent_material_detection,
              test_photoshop_handoff_generator,

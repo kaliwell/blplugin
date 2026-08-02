@@ -2,6 +2,14 @@
 
 All notable changes to Collection Mask Exporter are recorded here.
 
+## 0.8.1 - 2026-08-02
+
+- Register Simplified Chinese strings for Blender's dedicated `Operator`
+  translation context so panel buttons no longer remain in English.
+- Translate the panel title and clarify the Alpha storage label.
+- Replace the untranslated, unsaved `Default Preset` placeholder with the
+  language-neutral `CMask` name while preserving real user presets.
+
 ## 0.8.0 - 2026-08-02
 
 - Name mask files, Photoshop layers, and Alpha channels after Collection groups.

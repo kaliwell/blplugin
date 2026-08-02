@@ -8,6 +8,7 @@ DOMAIN = "collection_mask_exporter"
 
 
 ZH_CN = {
+    "Collection Mask Exporter": "集合蒙版导出器",
     "Mask": "蒙版",
     "Export an independent mask and include it in the color ID": "导出独立蒙版并参与彩色 ID",
     "Holdout": "挖空",
@@ -49,7 +50,7 @@ ZH_CN = {
     "Format": "格式",
     "Edge Expand/Contract": "边缘扩张/收缩",
     "Positive expands Alpha; negative contracts Alpha, in pixels": "正值扩张 Alpha，负值收缩 Alpha，单位为像素",
-    "Alpha Storage": "Alpha 存储",
+    "Alpha Storage": "透明度存储方式",
     "Keep RGB independent from Alpha": "RGB 不乘 Alpha，Alpha 独立存储",
     "Multiply RGB by Alpha": "RGB 乘以 Alpha",
     "Use Group Names for Masks": "蒙版使用组名",
@@ -205,9 +206,17 @@ ZH_CN = {
 }
 
 
+def _translation_entries():
+    return {
+        (context, source): translated
+        for source, translated in ZH_CN.items()
+        for context in ("*", "Operator")
+    }
+
+
 TRANSLATIONS = {
-    "zh_CN": {("*", source): translated for source, translated in ZH_CN.items()},
-    "zh_HANS": {("*", source): translated for source, translated in ZH_CN.items()},
+    "zh_CN": _translation_entries(),
+    "zh_HANS": _translation_entries(),
 }
 
 

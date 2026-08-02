@@ -43,6 +43,19 @@ try:
     assert bpy.app.translations.pgettext_iface(
         "Use Color ID Color for Masks"
     ) == "蒙版使用 Color ID 颜色"
+    operator_context = bpy.app.translations.contexts.operator_default
+    assert bpy.app.translations.pgettext(
+        "Check Scene", operator_context
+    ) == "检查场景"
+    assert bpy.app.translations.pgettext(
+        "One-Click Render + Masks + Photoshop", operator_context
+    ) == "一键导出渲染 + 蒙版 + Photoshop"
+    assert bpy.app.translations.pgettext_iface(
+        "Collection Mask Exporter"
+    ) == "集合蒙版导出器"
+    assert bpy.app.translations.pgettext_iface(
+        "Alpha Storage"
+    ) == "透明度存储方式"
 finally:
     preferences.language = original_language
     preferences.use_translate_interface = original_interface

@@ -201,7 +201,7 @@ class CMASK_OT_DeletePreset(bpy.types.Operator):
         settings.presets.remove(index)
         settings.preset_name = (
             settings.presets[min(index, len(settings.presets) - 1)].name
-            if settings.presets else iface("Default Preset")
+            if settings.presets else "CMask"
         )
         settings.last_status = iface("Preset deleted: {name}").format(name=name)
         self.report({"INFO"}, settings.last_status)

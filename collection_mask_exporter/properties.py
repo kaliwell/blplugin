@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
+from bpy.app.handlers import persistent
 from bpy.props import (
     BoolProperty, CollectionProperty, EnumProperty, FloatVectorProperty,
     IntProperty, PointerProperty, StringProperty,
@@ -213,7 +214,7 @@ class CMASK_PG_Settings(PropertyGroup):
     frame_start: IntProperty(name="Start", default=1, min=-1048574, max=1048574)
     frame_end: IntProperty(name="End", default=250, min=-1048574, max=1048574)
     frame_step: IntProperty(name="Step", default=1, min=1, max=1048574)
-    preset_name: StringProperty(name="Preset Name", default="Default Preset")
+    preset_name: StringProperty(name="Preset Name", default="CMask")
     presets: CollectionProperty(type=CMASK_PG_Preset)
     active_preset_index: IntProperty(default=0)
     last_outputs: CollectionProperty(type=CMASK_PG_OutputFile)
@@ -236,13 +237,35 @@ CLASSES = (
 )
 
 
+def migrate_default_preset_names():
+    scenes = getattr(bpy.data, "scenes", None)
+    if scenes is None:
+        return
+    for scene in scenes:
+        settings = scene.cmask_settings
+        if (settings.preset_name == "Default Preset" and
+                not any(preset.name == "Default Preset"
+                        for preset in settings.presets)):
+            settings.preset_name = "CMask"
+
+
+@persistent
+def _migrate_after_load(_unused):
+    migrate_default_preset_names()
+
+
 def register_properties():
     for cls in CLASSES:
         bpy.utils.register_class(cls)
     bpy.types.Scene.cmask_settings = PointerProperty(type=CMASK_PG_Settings)
+    if _migrate_after_load not in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.append(_migrate_after_load)
+    migrate_default_preset_names()
 
 
 def unregister_properties():
+    if _migrate_after_load in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.remove(_migrate_after_load)
     del bpy.types.Scene.cmask_settings
     for cls in reversed(CLASSES):
         bpy.utils.unregister_class(cls)
