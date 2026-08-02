@@ -1,6 +1,6 @@
 schema_version = "1.0.0"
 id = "collection_mask_exporter"
-version = "0.8.1"
+version = "0.9.0"
 name = "Collection Mask Exporter"
 tagline = "Export stable Collection IDs and per-Collection masks"
 maintainer = "CMask Contributors"

@@ -4,7 +4,7 @@ CMask is a Blender Extension for exporting stable Collection Color IDs,
 per-Collection masks, Multilayer OpenEXR, Collection Cryptomatte, reports, and
 Photoshop handoff files.
 
-Version: 0.8.1
+Version: 0.9.0
 
 Formally supported Blender versions:
 

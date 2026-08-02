@@ -1,6 +1,6 @@
 # Collection Mask Exporter (CMask)
 
-当前开发版本：v0.8.1。更新扩展后需要完整退出并重新启动 Blender，
+当前开发版本：v0.9.0。更新扩展后需要完整退出并重新启动 Blender，
 否则旧 Python 模块可能继续驻留在当前进程中。
 
 面向 Blender 4.5.x、5.0.x、5.2.x 的 Collection 蒙版导出扩展，当前已经包含：
@@ -34,6 +34,7 @@
 - 跟随 Blender 界面语言自动切换简体中文 / English
 - Photoshop JSX 交接脚本、分层 PSD 与 Alpha 通道自动创建
 - 组名蒙版、Color ID 同色 RGB，以及渲染/蒙版/Photoshop 一键交付
+- Blender 原生父级/子级可折叠面板，减少侧栏按钮堆叠
 - Blender 4.5/5.0/5.2 示例工程、快速入门和跨版本验收脚本
 - Blender API 一键兼容性诊断及渲染农场诊断任务
 - 渲染结束或失败后的场景状态恢复
@@ -142,6 +143,9 @@ v0.8.0 默认让蒙版文件、Photoshop 图层和 Alpha 通道直接使用 Coll
 
 v0.8.1 补齐 Blender `Operator` 翻译上下文，修复按钮仍显示英文的问题；面板标题、
 透明度存储方式以及旧场景未保存的默认预设占位也完成中文界面适配。
+
+v0.9.0 将单一长侧栏重构为 Blender 原生父级/子级面板；扫描与组、输出设置、
+一键交付默认展开，预设、检查、Geometry Nodes、批量、单项导出和高级输出默认折叠。
 
 命令行与渲染农场用法见 `docs/CMask_命令行与渲染农场.md`。
 Photoshop 交付用法见 `docs/CMask_Photoshop_交付.md`。

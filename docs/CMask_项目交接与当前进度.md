@@ -1,7 +1,7 @@
 # CMask 项目交接与当前进度
 
 > 交接日期：2026-08-02
-> 当前版本：v0.8.1
+> 当前版本：v0.9.0
 > 项目目录：`D:\blplugin`
 > 正式支持：Blender 4.5.x、5.0.x、5.2.x
 > 最新验证矩阵：Blender 4.5.12 LTS、5.0.1、5.2.0 LTS
@@ -9,21 +9,21 @@
 ## 1. 交接结论
 
 Collection Mask Exporter 当前已经形成可安装、可使用、可测试的完整 Blender
-Extension。以 v0.8.1 已定义的功能范围计算，核心交付流程已完成；剩余工作主要是
+Extension。以 v0.9.0 已定义的功能范围计算，核心交付流程已完成；剩余工作主要是
 Blender 6.0 正式版发布后的实机认证、更多动态 Geometry Nodes 数据域，以及持续的
 UI/Photoshop 跨版本兼容维护。
 
 当前可直接交付的安装包与完整交付包：
 
 ```text
-D:\blplugin\dist\collection_mask_exporter-0.8.1.zip
-D:\blplugin\dist\collection_mask_exporter-0.8.1-release.zip
+D:\blplugin\dist\collection_mask_exporter-0.9.0.zip
+D:\blplugin\dist\collection_mask_exporter-0.9.0-release.zip
 ```
 
 对应 SHA256 统一记录在：
 
 ```text
-D:\blplugin\dist\collection_mask_exporter-0.8.1-SHA256.txt
+D:\blplugin\dist\collection_mask_exporter-0.9.0-SHA256.txt
 ```
 
 最终安装 ZIP 已分别通过 Blender 4.5、5.0、5.2 的清单验证，以及隔离用户配置下
@@ -42,6 +42,7 @@ D:\blplugin\dist\collection_mask_exporter-0.8.1-SHA256.txt
 | Geometry Nodes 静态源 | 已完成 | 输出可达分析、嵌套组、静态源拆分 |
 | Geometry Nodes 动态字段 | 已完成当前协议 | Blender 5.0+，求值后 Mesh FACE/INT `cmask_id` |
 | 中英文界面 | 已完成 | 跟随 Blender，兼容 `zh_CN` 与 `zh_HANS` |
+| 可折叠侧栏布局 | 已完成 | 原生父/子面板，常用区展开、低频区折叠 |
 | Photoshop 自动交付 | 已完成并实机验证 | v0.6.6：6 图层、5 Alpha、PSD 保存通过 |
 | 一键渲染与 PS 交付 | 已完成 | 正式渲染、Color ID、组名彩色蒙版、JSX 与清单 |
 | CLI / 渲染农场 | 已完成 | JSON 任务、结果 JSON、诊断操作 |
@@ -110,6 +111,12 @@ D:\blplugin\dist\collection_mask_exporter-0.8.1-SHA256.txt
 - 补齐 Blender `Operator` 专用翻译上下文，修复面板按钮仍显示英文。
 - 翻译面板标题并优化透明度存储标签。
 - 未实际保存的旧 `Default Preset` 占位迁移为语言中性的 `CMask`。
+
+### v0.9.0
+
+- 将原有单一长面板拆分为 1 个父面板和 9 个 Blender 原生可折叠子面板。
+- 默认展开扫描与组、输出设置和一键交付；低频工具默认折叠。
+- 新增子面板标题中英文翻译和跨 Blender 4.5/5.0/5.2 层级、绘制回归测试。
 
 ## 4. 关键工作流
 
@@ -272,12 +279,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\release.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\release.ps1 -FullRenderMatrix
 ```
 
-v0.8.1 当前发布产物：
+v0.9.0 当前发布产物：
 
-- `dist/collection_mask_exporter-0.8.1.zip`：Blender 从磁盘安装包。
-- `dist/collection_mask_exporter-0.8.1-release.zip`：README、CHANGELOG、全部文档、
+- `dist/collection_mask_exporter-0.9.0.zip`：Blender 从磁盘安装包。
+- `dist/collection_mask_exporter-0.9.0-release.zip`：README、CHANGELOG、全部文档、
   示例工程和安装包组成的完整交付包。
-- `dist/collection_mask_exporter-0.8.1-SHA256.txt`：上述两个 ZIP 的 SHA256。
+- `dist/collection_mask_exporter-0.9.0-SHA256.txt`：上述两个 ZIP 的 SHA256。
 
 ## 10. 已知边界与风险
 

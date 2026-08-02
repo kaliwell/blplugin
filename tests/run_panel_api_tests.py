@@ -84,7 +84,25 @@ class MockLayout:
 
 
 import collection_mask_exporter as addon
+from collection_mask_exporter.ui.panel import CLASSES as PANEL_CLASSES
 from collection_mask_exporter.ui.panel import CMASK_PT_MainPanel
+
+
+assert len(PANEL_CLASSES) == 10
+assert PANEL_CLASSES[0] is CMASK_PT_MainPanel
+for panel_class in PANEL_CLASSES[1:]:
+    assert panel_class.bl_parent_id == CMASK_PT_MainPanel.bl_idname
+assert {
+    panel_class.bl_label
+    for panel_class in PANEL_CLASSES
+    if "DEFAULT_CLOSED" not in getattr(panel_class, "bl_options", set())
+} == {
+    "Collection Mask Exporter",
+    "Scan and Groups",
+    "Output Settings",
+    "One-Click Delivery",
+}
+print("CMASK COLLAPSIBLE PANEL HIERARCHY TESTS PASSED")
 
 addon.register()
 try:
@@ -94,9 +112,14 @@ try:
         settings.dynamic_geometry_enabled = True
         settings.geometry_nodes_split_sources = True
         settings.frame_mode = "RANGE"
-        CMASK_PT_MainPanel.draw(
-            SimpleNamespace(layout=MockLayout()), bpy.context
-        )
+        for panel_class in PANEL_CLASSES:
+            panel_class.draw(
+                SimpleNamespace(
+                    layout=MockLayout(),
+                    settings=lambda context: context.scene.cmask_settings,
+                ),
+                bpy.context,
+            )
 finally:
     addon.unregister()
 print("CMASK FULL PANEL DRAW TESTS PASSED")

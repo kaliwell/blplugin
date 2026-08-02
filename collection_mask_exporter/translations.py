@@ -203,6 +203,12 @@ ZH_CN = {
     "Split Geometry Nodes Color ID does not support Render Result preview; export it to a file": "Geometry Nodes 拆分彩色 ID 暂不支持 Render Result 预览，请执行导出",
     "No mask group is selected": "没有选中的蒙版组",
     "Only enabled MASK groups can be exported": "只能导出已启用的 MASK 组",
+    "Scan and Groups": "扫描与组",
+    "Validation": "检查与诊断",
+    "Geometry Nodes Settings": "Geometry Nodes 设置",
+    "One-Click Delivery": "一键交付",
+    "Individual Exports": "单项导出",
+    "Advanced Output": "高级输出",
 }
 
 
