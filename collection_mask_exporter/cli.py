@@ -19,6 +19,8 @@ OPERATIONS = {
     "color-id": "cmask.export_color_id",
     "selected-mask": "cmask.export_selected_mask",
     "all-masks": "cmask.export_all_masks",
+    "selected-cutout": "cmask.export_selected_cutout",
+    "all-cutouts": "cmask.export_all_cutouts",
     "all": "cmask.export_all",
     "delivery": "cmask.export_delivery",
     "multilayer": "cmask.export_multilayer_exr",
@@ -31,11 +33,11 @@ SETTING_FIELDS = {
     "scan_mode", "collection_prefix", "scan_visible_only", "include_children",
     "conflict_mode", "mask_output_mode", "output_directory", "output_format",
     "color_depth", "edge_adjustment", "alpha_mode", "transparent_material_mode",
-    "mask_use_group_name", "mask_use_group_color",
+    "mask_use_group_name", "mask_use_group_color", "mask_edge_protection",
     "filename_template", "write_report", "create_compositor_nodes",
     "multilayer_include_color_id", "cryptomatte_depth", "camera_mode",
     "geometry_nodes_split_sources", "dynamic_geometry_enabled",
-    "dynamic_attribute_name",
+    "dynamic_attribute_name", "delivery_include_cutouts",
     "frame_mode", "frame_start", "frame_end", "frame_step",
 }
 JOB_FIELDS = SETTING_FIELDS | {
@@ -57,7 +59,9 @@ def build_parser():
     parser.add_argument("--prefix", dest="collection_prefix")
     parser.add_argument("--visible-only", dest="scan_visible_only",
                         action="store_true", default=None)
-    parser.add_argument("--collection", help="Collection for selected-mask")
+    parser.add_argument(
+        "--collection", help="Collection for selected-mask or selected-cutout"
+    )
     parser.add_argument("--format", dest="output_format", choices=("PNG", "OPEN_EXR"))
     parser.add_argument("--depth", dest="color_depth", choices=("8", "16", "32"))
     parser.add_argument("--cryptomatte-depth", choices=("2", "4", "6", "8", "10", "12"))

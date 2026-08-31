@@ -60,6 +60,7 @@ def create_scene():
     link_only(back, back_collection)
 
     settings = scene.cmask_settings
+    assert settings.mask_edge_protection is False
     settings.scan_mode = "PREFIX"
     bpy.ops.cmask.scan()
     return scene, settings, front, back
@@ -125,6 +126,14 @@ front.data.materials.append(original_material)
 back.data.materials.append(original_material)
 user_named_material = bpy.data.materials.new("__CMASK_MATERIAL_ID")
 from collection_mask_exporter.core.material_override import ensure_material_node_tree
+original_tree = ensure_material_node_tree(original_material)
+original_tree.nodes.clear()
+original_output = original_tree.nodes.new("ShaderNodeOutputMaterial")
+original_emission = original_tree.nodes.new("ShaderNodeEmission")
+original_emission.inputs["Color"].default_value = (0.12, 0.48, 0.86, 1.0)
+original_tree.links.new(
+    original_emission.outputs["Emission"], original_output.inputs["Surface"]
+)
 ensure_material_node_tree(user_named_material)
 user_named_material.node_tree.nodes[0].name = "UserSentinel"
 user_named_layer = scene.view_layers.new("__CMASK_VIEW_LAYER")
@@ -144,12 +153,12 @@ output = pathlib.Path(tempfile.mkdtemp(prefix="cmask-render-test-"))
 settings.output_directory = str(output)
 
 from collection_mask_exporter.core.output_manager import (
-    color_id_path, cryptomatte_path, mask_path, multilayer_path,
+    color_id_path, cryptomatte_path, cutout_path, mask_path, multilayer_path,
 )
 from collection_mask_exporter.core.layer_collection import collection_layer_map
 from collection_mask_exporter.core.render_pipeline import (
     TEMP_VIEW_LAYER, _create_view_layer, _remove_view_layer,
-    render_color_id, render_mask,
+    render_color_id, render_cutout, render_mask,
 )
 from collection_mask_exporter.core.compositor import get_compositor_tree
 from collection_mask_exporter.core.state_manager import (
@@ -211,6 +220,116 @@ silhouette_alpha = alpha_range(silhouette_path)
 assert silhouette_alpha[2] > visible_alpha[2] + 5.0
 print("PASS silhouette mask render", silhouette_path)
 
+settings.mask_edge_protection = False
+unprotected_path = str(output / "unprotected.png")
+render_mask(bpy.context, target, unprotected_path)
+unprotected_alpha = alpha_range(unprotected_path)
+settings.mask_edge_protection = True
+protected_path = str(output / "protected.png")
+render_mask(bpy.context, target, protected_path)
+protected_alpha = alpha_range(protected_path)
+assert protected_alpha[2] > unprotected_alpha[2] + 1.0
+print("PASS automatic one-pixel edge protection")
+settings.mask_edge_protection = False
+
+settings.mask_output_mode = "VISIBLE"
+cutout_output = cutout_path(scene, settings, target.collection.name)
+render_cutout(bpy.context, target, cutout_output)
+cutout_alpha = alpha_range(cutout_output)
+assert os.path.isfile(cutout_output) and os.path.getsize(cutout_output) > 100
+assert cutout_alpha[1] > 0.99 and cutout_alpha[0] < 0.01
+assert cutout_alpha[2] < silhouette_alpha[2] - 1.0
+cutout_rgb = closest_opaque_rgb(cutout_output, (0.12, 0.48, 0.86, 1.0))
+assert (
+    cutout_rgb[2] > cutout_rgb[1] > cutout_rgb[0] and cutout_rgb[2] > 0.3
+), cutout_rgb
+print("PASS original-material transparent cutout", cutout_output)
+
+front_layer = collection_layer_map(bpy.context.view_layer)[front.users_collection[0]]
+front_layer.holdout = True
+isolate_original = (
+    front.hide_render, front.is_holdout, back.hide_render, back.is_holdout,
+    scene.render.film_transparent, front_layer.holdout,
+)
+assert bpy.ops.cmask.isolate_object_render(
+    object_name=back.name, render_now=False
+) == {"FINISHED"}
+assert settings.isolate_active and settings.isolate_label == back.name
+assert front.is_holdout and not back.is_holdout and not back.hide_render
+assert scene.render.film_transparent and front_layer.holdout
+assert bpy.ops.cmask.clear_isolate_render() == {"FINISHED"}
+isolate_restored = (
+    front.hide_render, front.is_holdout, back.hide_render, back.is_holdout,
+    scene.render.film_transparent, front_layer.holdout,
+)
+assert isolate_restored == isolate_original, (isolate_original, isolate_restored)
+assert not settings.isolate_active
+front_layer.holdout = False
+print("PASS object solo-render state and exact cancellation restore")
+
+assert bpy.ops.cmask.isolate_collection_render(
+    collection_name=target.collection.name, render_now=False
+) == {"FINISHED"}
+assert settings.isolate_active and settings.isolate_label == target.collection.name
+assert front.is_holdout and not back.is_holdout
+assert bpy.ops.cmask.clear_isolate_render() == {"FINISHED"}
+assert not settings.isolate_active and not front.is_holdout
+print("PASS Collection solo-render state and cancellation")
+
+empty_isolation_collection = bpy.data.collections.new("CM_EmptyIsolation")
+scene.collection.children.link(empty_isolation_collection)
+assert bpy.ops.cmask.isolate_object_render(
+    object_name=back.name, render_now=False
+) == {"FINISHED"}
+try:
+    bpy.ops.cmask.isolate_collection_render(
+        collection_name=empty_isolation_collection.name, render_now=False
+    )
+except RuntimeError as exc:
+    assert "no renderable objects" in str(exc)
+else:
+    raise AssertionError("Expected an invalid solo-render target to fail")
+assert settings.isolate_active and settings.isolate_label == back.name
+assert scene.render.film_transparent
+assert bpy.ops.cmask.clear_isolate_render() == {"FINISHED"}
+bpy.data.collections.remove(empty_isolation_collection)
+print("PASS invalid solo-render target preserves the active state")
+
+target_layer = collection_layer_map(bpy.context.view_layer)[target.collection]
+target_layer.exclude = True
+assert collection_layer_map(bpy.context.view_layer)[target.collection].exclude is True
+original_target_name = target.collection.name
+assert bpy.ops.cmask.isolate_collection_render(
+    collection_name=original_target_name, render_now=False
+) == {"FINISHED"}
+target.collection.name = original_target_name + "_Renamed"
+assert bpy.ops.cmask.clear_isolate_render() == {"FINISHED"}
+target_layer = collection_layer_map(bpy.context.view_layer)[target.collection]
+assert target_layer.exclude is True
+target.collection.name = original_target_name
+target_layer.exclude = False
+print("PASS renamed Collection solo-render restoration")
+
+completed_solo_renders = []
+
+
+def record_solo_render(_scene, _depsgraph):
+    completed_solo_renders.append(True)
+
+
+bpy.app.handlers.render_post.append(record_solo_render)
+try:
+    assert bpy.ops.cmask.isolate_object_render(
+        object_name=back.name, render_now=True
+    ) == {"FINISHED"}
+finally:
+    bpy.app.handlers.render_post.remove(record_solo_render)
+assert completed_solo_renders == [True]
+assert bpy.ops.cmask.clear_isolate_render() == {"FINISHED"}
+print("PASS immediate object solo render")
+
+settings.mask_output_mode = "SILHOUETTE"
+
 straight_sample = fractional_rgba(silhouette_path)
 assert max(abs(straight_sample[index] - id_rgb[index])
            for index in range(3)) < 0.03
@@ -235,8 +354,11 @@ render_mask(bpy.context, target, transparent_included_path)
 settings.transparent_material_mode = "EXCLUDE"
 transparent_excluded_path = str(output / "transparent-excluded.png")
 render_mask(bpy.context, target, transparent_excluded_path)
+transparent_cutout_excluded_path = str(output / "transparent-cutout-excluded.png")
+render_cutout(bpy.context, target, transparent_cutout_excluded_path)
 assert alpha_range(transparent_included_path)[2] > 100.0
 assert alpha_range(transparent_excluded_path)[2] < 0.01
+assert alpha_range(transparent_cutout_excluded_path)[2] < 0.01
 settings.transparent_material_mode = "INCLUDE"
 back.data.materials.clear()
 back.data.materials.append(original_material)
@@ -346,6 +468,7 @@ assert report["success"] is True and report["color_depth"] == "16"
 assert report["alpha_mode"] == "STRAIGHT"
 assert report["mask_use_group_name"] is True
 assert report["mask_use_group_color"] is True
+assert report["mask_edge_protection"] is False
 assert report["transparent_material_mode"] == "INCLUDE"
 assert expected_16_bit in report["outputs"]
 assert report["create_compositor_nodes"] is True

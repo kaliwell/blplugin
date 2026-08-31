@@ -2,52 +2,39 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from array import array
-from collections import deque
-
 import bpy
+import numpy as np
 
 
-def _filter_line(values, radius, maximum):
-    if radius <= 0:
-        return list(values)
-    outside = 0.0
-    padded = [outside] * radius + list(values) + [outside] * radius
+def _morph_alpha_array(alpha, width, height, amount):
+    radius = abs(int(amount))
+    source = np.asarray(alpha, dtype=np.float32).reshape(height, width)
+    if radius == 0:
+        return source
     window = radius * 2 + 1
-    queue = deque()
-    result = []
-    for index, value in enumerate(padded):
-        while queue and queue[0] <= index - window:
-            queue.popleft()
-        if maximum:
-            while queue and padded[queue[-1]] <= value:
-                queue.pop()
-        else:
-            while queue and padded[queue[-1]] >= value:
-                queue.pop()
-        queue.append(index)
-        if index >= window - 1:
-            result.append(padded[queue[0]])
-    return result
+    reducer = np.max if amount > 0 else np.min
+    horizontal_source = np.pad(
+        source, ((0, 0), (radius, radius)),
+        mode="constant", constant_values=0.0,
+    )
+    horizontal_windows = np.lib.stride_tricks.sliding_window_view(
+        horizontal_source, window_shape=window, axis=1,
+    )
+    horizontal = reducer(horizontal_windows, axis=-1)
+    vertical_source = np.pad(
+        horizontal, ((radius, radius), (0, 0)),
+        mode="constant", constant_values=0.0,
+    )
+    vertical_windows = np.lib.stride_tricks.sliding_window_view(
+        vertical_source, window_shape=window, axis=0,
+    )
+    return np.ascontiguousarray(reducer(vertical_windows, axis=-1))
 
 
 def morph_alpha(alpha, width, height, amount):
-    radius = abs(int(amount))
-    if radius == 0:
-        return list(alpha)
-    maximum = amount > 0
-    horizontal = [0.0] * (width * height)
-    for y in range(height):
-        start = y * width
-        horizontal[start:start + width] = _filter_line(
-            alpha[start:start + width], radius, maximum
-        )
-    result = [0.0] * (width * height)
-    for x in range(width):
-        column = [horizontal[y * width + x] for y in range(height)]
-        filtered = _filter_line(column, radius, maximum)
-        for y, value in enumerate(filtered):
-            result[y * width + x] = value
-    return result
+    return _morph_alpha_array(
+        alpha, width, height, amount
+    ).reshape(-1).tolist()
 
 
 def apply_mask_postprocess(scene, filepath, amount, alpha_mode, preview=False,
@@ -64,21 +51,21 @@ def apply_mask_postprocess(scene, filepath, amount, alpha_mode, preview=False,
         width, height = image.size
         pixels = array("f", [0.0]) * len(image.pixels)
         image.pixels.foreach_get(pixels)
-        alpha = pixels[3::4]
-        strongest = max(range(len(alpha)), key=alpha.__getitem__)
-        strongest_offset = strongest * 4
+        rgba = np.frombuffer(pixels, dtype=np.float32).reshape(-1, 4)
+        alpha = rgba[:, 3].reshape(height, width)
+        strongest = int(np.argmax(alpha))
         rendered_color = (
-            tuple(pixels[strongest_offset:strongest_offset + 3])
-            if alpha[strongest] > 0.0 else tuple(color[:3])
+            rgba[strongest, :3].copy()
+            if rgba[strongest, 3] > 0.0
+            else np.asarray(color[:3], dtype=np.float32)
         )
-        adjusted = morph_alpha(alpha, width, height, amount) if amount else alpha
-        for index, value in enumerate(adjusted):
-            offset = index * 4
-            multiplier = value if alpha_mode == "PREMULTIPLIED" else 1.0
-            pixels[offset] = rendered_color[0] * multiplier
-            pixels[offset + 1] = rendered_color[1] * multiplier
-            pixels[offset + 2] = rendered_color[2] * multiplier
-            pixels[offset + 3] = value
+        adjusted = _morph_alpha_array(alpha, width, height, amount)
+        flat_alpha = adjusted.reshape(-1)
+        if alpha_mode == "PREMULTIPLIED":
+            rgba[:, :3] = flat_alpha[:, None] * rendered_color[None, :]
+        else:
+            rgba[:, :3] = rendered_color
+        rgba[:, 3] = flat_alpha
         image.pixels.foreach_set(pixels)
         image.update()
         if filepath:

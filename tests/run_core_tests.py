@@ -489,6 +489,8 @@ def test_cli_job_resolution():
                 "geometry_nodes_split_sources": True,
                 "dynamic_geometry_enabled": True,
                 "dynamic_attribute_name": "delivery_id",
+                "mask_edge_protection": False,
+                "delivery_include_cutouts": False,
             }, handle)
         config = resolve_config([
             "--job", path, "--operation", "cryptomatte",
@@ -503,6 +505,8 @@ def test_cli_job_resolution():
         assert config["geometry_nodes_split_sources"] is True
         assert config["dynamic_geometry_enabled"] is True
         assert config["dynamic_attribute_name"] == "delivery_id"
+        assert config["mask_edge_protection"] is False
+        assert config["delivery_include_cutouts"] is False
 
 
 def test_incremental_sync_preserves_rows_and_selection():
@@ -544,11 +548,13 @@ def test_scene_presets_round_trip():
     settings.output_format = "OPEN_EXR"
     settings.color_depth = "32"
     settings.edge_adjustment = 3
+    settings.mask_edge_protection = False
     settings.alpha_mode = "PREMULTIPLIED"
     settings.mask_use_group_name = False
     settings.mask_use_group_color = False
     settings.transparent_material_mode = "EXCLUDE"
     settings.photoshop_create_channels = False
+    settings.delivery_include_cutouts = False
     settings.geometry_nodes_split_sources = True
     settings.dynamic_geometry_enabled = True
     settings.dynamic_attribute_name = "delivery_mask_id"
@@ -564,11 +570,13 @@ def test_scene_presets_round_trip():
     settings.output_format = "PNG"
     settings.color_depth = "8"
     settings.edge_adjustment = 0
+    settings.mask_edge_protection = True
     settings.alpha_mode = "STRAIGHT"
     settings.mask_use_group_name = True
     settings.mask_use_group_color = True
     settings.transparent_material_mode = "INCLUDE"
     settings.photoshop_create_channels = True
+    settings.delivery_include_cutouts = True
     settings.geometry_nodes_split_sources = False
     settings.dynamic_geometry_enabled = False
     settings.dynamic_attribute_name = "changed"
@@ -584,11 +592,13 @@ def test_scene_presets_round_trip():
     assert bpy.ops.cmask.apply_preset() == {"FINISHED"}
     assert settings.output_format == "OPEN_EXR"
     assert settings.color_depth == "32" and settings.edge_adjustment == 3
+    assert settings.mask_edge_protection is False
     assert settings.alpha_mode == "PREMULTIPLIED"
     assert settings.mask_use_group_name is False
     assert settings.mask_use_group_color is False
     assert settings.transparent_material_mode == "EXCLUDE"
     assert settings.photoshop_create_channels is False
+    assert settings.delivery_include_cutouts is False
     assert settings.geometry_nodes_split_sources is True
     assert settings.dynamic_geometry_enabled is True
     assert settings.dynamic_attribute_name == "delivery_mask_id"
@@ -677,18 +687,24 @@ def test_photoshop_handoff_generator():
         root = Path(temp)
         color_dir = root / "Color_ID"
         mask_dir = root / "Masks"
+        cutout_dir = root / "Cutouts"
         color_dir.mkdir()
         mask_dir.mkdir()
+        cutout_dir.mkdir()
         color = color_dir / "彩色 ID.png"
         mask = mask_dir / "主体蒙版.png"
+        cutout = cutout_dir / "主体蒙版.png"
         color.write_bytes(b"test")
         mask.write_bytes(b"test")
+        cutout.write_bytes(b"test")
         settings.output_directory = str(root)
-        for path in (color, mask):
+        for path in (color, mask, cutout):
             item = settings.last_outputs.add()
             item.path = str(path)
 
-        script = build_photoshop_jsx([str(color), str(mask)], str(root / "交付.psd"))
+        script = build_photoshop_jsx(
+            [str(color), str(mask), str(cutout)], str(root / "交付.psd")
+        )
         assert "PhotoshopSaveOptions" in script
         assert "createAlphaChannel" in script and "SelectionType.REPLACE" in script
         assert "options.alphaChannels = true" in script
@@ -698,6 +714,7 @@ def test_photoshop_handoff_generator():
         assert "activeLayerIsEmpty" in script and "emptyAlpha" in script
         assert '"name": "Color ID"' in script
         assert '"name": "\\u4e3b\\u4f53\\u8499\\u7248"' in script
+        assert '"name": "\\u4e3b\\u4f53\\u8499\\u7248 Cutout"' in script
         assert "\\u5f69\\u8272" in script and "\\u4e3b\\u4f53" in script
 
         jsx_path, manifest_path, psd_path = write_photoshop_handoff(scene, settings)
@@ -707,10 +724,12 @@ def test_photoshop_handoff_generator():
             manifest = json.load(handle)
         assert manifest["schema"] == "cmask.photoshop_handoff.v1"
         assert manifest["create_alpha_channels"] is True
-        assert len(manifest["outputs"]) == 2
+        assert len(manifest["outputs"]) == 3
         assert manifest["outputs"][1]["layer"] == "主体蒙版"
+        assert manifest["outputs"][2]["layer"] == "主体蒙版 Cutout"
         assert manifest["outputs"][0]["channel"] is None
         assert manifest["outputs"][1]["channel"] == "主体蒙版"
+        assert manifest["outputs"][2]["channel"] is None
         assert psd_path.endswith("_cmask_photoshop.psd")
 
         settings.photoshop_create_channels = False
@@ -750,7 +769,7 @@ def test_compatibility_diagnostic():
         "layer_collection_flags", "material_node_tree", "openimageio",
     }
     path, written = write_compatibility_report(scene, settings)
-    assert Path(path).is_file() and written["addon_version"] == "0.9.1"
+    assert Path(path).is_file() and written["addon_version"] == "0.10.1"
     with open(path, "r", encoding="utf-8") as handle:
         assert json.load(handle)["blender_version"] == bpy.app.version_string
     assert bpy.ops.cmask.compatibility_report() == {"FINISHED"}

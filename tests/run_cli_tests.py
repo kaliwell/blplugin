@@ -71,11 +71,15 @@ with tempfile.TemporaryDirectory(prefix="cmask-cli-test-") as temp:
     ], exit_on_error=False)
     assert delivery["success"] is True
     assert delivery["operation"] == "delivery"
-    assert len(delivery["outputs"]) == 3
+    assert len(delivery["outputs"]) == 4
     assert all(os.path.isfile(path) for path in delivery["outputs"])
     assert os.path.basename(next(
         path for path in delivery["outputs"]
         if os.path.basename(os.path.dirname(path)) == "Masks"
+    )) == "CM_CLI.png"
+    assert os.path.basename(next(
+        path for path in delivery["outputs"]
+        if os.path.basename(os.path.dirname(path)) == "Cutouts"
     )) == "CM_CLI.png"
     photoshop_dir = os.path.join(delivery_root, "Photoshop")
     assert any(name.endswith("_import.jsx") for name in os.listdir(photoshop_dir))

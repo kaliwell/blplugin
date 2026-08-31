@@ -33,8 +33,10 @@
 | `color-id` | 彩色 Collection ID |
 | `selected-mask` | 指定 Collection 蒙版，配合 `--collection` |
 | `all-masks` | 全部启用的 MASK |
+| `selected-cutout` | 指定 Collection 的原材质透明抠图，配合 `--collection` |
+| `all-cutouts` | 全部启用 MASK 组的原材质透明抠图 |
 | `all` | 彩色 ID 与全部 MASK |
-| `delivery` | 正式渲染、Color ID、全部 MASK、Photoshop JSX 与交接清单 |
+| `delivery` | 正式渲染、Color ID、全部 MASK、可选全部 Cutouts、Photoshop JSX 与交接清单 |
 | `multilayer` | 单文件 Multilayer EXR |
 | `cryptomatte` | Collection Cryptomatte |
 | `batch` | 按相机和帧设置批量导出 |

@@ -7,11 +7,13 @@ import os
 import tempfile
 
 from ..core.output_manager import (
-    beauty_path, color_id_path, cryptomatte_path, disambiguate_path, mask_path,
-    multilayer_path, unique_mask_paths,
+    beauty_path, color_id_path, cryptomatte_path, cutout_path,
+    disambiguate_path, mask_path, multilayer_path, unique_cutout_paths,
+    unique_mask_paths,
 )
 from ..core.render_pipeline import (
-    RenderPipelineError, render_beauty, render_color_id, render_mask,
+    RenderPipelineError, render_beauty, render_color_id, render_cutout,
+    render_mask,
 )
 from ..core.report_manager import write_export_report
 from ..core.photoshop import write_photoshop_handoff
@@ -167,6 +169,53 @@ class CMASK_OT_ExportAllMasks(_CMaskRenderOperator, bpy.types.Operator):
         return self.run_guarded(context, export_all)
 
 
+class CMASK_OT_ExportSelectedCutout(_CMaskRenderOperator, bpy.types.Operator):
+    bl_idname = "cmask.export_selected_cutout"
+    bl_label = "Export Selected Transparent Cutout"
+    bl_description = "Render the selected group with original materials; other groups preserve occlusion as transparency"
+    report_operation = "selected_cutout"
+
+    def execute(self, context):
+        settings = context.scene.cmask_settings
+        target = active_group(settings)
+
+        def export():
+            name = target.collection.name if target and target.collection else "cutout"
+            path = cutout_path(context.scene, settings, name)
+            render_cutout(context, target, path)
+            return iface("Exported transparent cutout: {path}").format(path=path), [path]
+
+        return self.run_guarded(context, export)
+
+
+class CMASK_OT_ExportAllCutouts(_CMaskRenderOperator, bpy.types.Operator):
+    bl_idname = "cmask.export_all_cutouts"
+    bl_label = "Export All Transparent Cutouts"
+    bl_description = "Render every MASK group with original materials and transparent occlusion"
+    report_operation = "all_cutouts"
+
+    def execute(self, context):
+        settings = context.scene.cmask_settings
+
+        def export_all():
+            targets = [
+                item for item in settings.groups
+                if item.enabled and item.role == "MASK" and item.collection
+            ]
+            if not targets:
+                raise RenderPipelineError(iface("No MASK group is available for export"))
+            outputs = []
+            self._partial_outputs = outputs
+            for item, path in unique_cutout_paths(context.scene, settings, targets):
+                render_cutout(context, item, path)
+                outputs.append(path)
+            return iface("Exported {count} transparent cutouts").format(
+                count=len(outputs)
+            ), outputs
+
+        return self.run_guarded(context, export_all)
+
+
 class CMASK_OT_ExportAll(_CMaskRenderOperator, bpy.types.Operator):
     bl_idname = "cmask.export_all"
     bl_label = "Export All"
@@ -225,12 +274,19 @@ class CMASK_OT_ExportDelivery(_CMaskRenderOperator, bpy.types.Operator):
                 render_mask(context, item, path)
                 outputs.append(path)
 
+            cutout_count = 0
+            if settings.delivery_include_cutouts:
+                for item, path in unique_cutout_paths(scene, settings, targets):
+                    render_cutout(context, item, path)
+                    outputs.append(path)
+                    cutout_count += 1
+
             jsx_path, _manifest_path, _psd_path = write_photoshop_handoff(
                 scene, settings, outputs=outputs
             )
             return iface(
-                "One-click delivery complete: render, Color ID, {count} masks; Photoshop script: {jsx}"
-            ).format(count=len(targets), jsx=jsx_path), outputs
+                "One-click delivery complete: render, Color ID, {count} masks, {cutouts} cutouts; Photoshop script: {jsx}"
+            ).format(count=len(targets), cutouts=cutout_count, jsx=jsx_path), outputs
 
         return self.run_guarded(context, export_delivery)
 
@@ -313,7 +369,7 @@ class CMASK_OT_ExportCryptomatte(_CMaskRenderOperator, bpy.types.Operator):
                     masks = []
                     for index, item in enumerate(targets):
                         path = os.path.join(temp, f"Mask_{index:04d}.exr")
-                        render_mask(context, item, path)
+                        render_mask(context, item, path, edge_protection=False)
                         masks.append((item.collection.name, path))
                     manifest = combine_collection_cryptomatte(
                         final_path, masks, depth=int(settings.cryptomatte_depth)
@@ -403,6 +459,8 @@ CLASSES = (
     CMASK_OT_ExportColorID,
     CMASK_OT_ExportSelectedMask,
     CMASK_OT_ExportAllMasks,
+    CMASK_OT_ExportSelectedCutout,
+    CMASK_OT_ExportAllCutouts,
     CMASK_OT_ExportAll,
     CMASK_OT_ExportDelivery,
     CMASK_OT_ExportMultilayerEXR,

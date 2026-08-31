@@ -42,9 +42,14 @@ settings.color_depth = "8"
 settings.write_report = True
 assert bpy.ops.cmask.export_delivery() == {"FINISHED"}
 paths = [pathlib.Path(item.path) for item in settings.last_outputs]
-assert len(paths) == 4 and all(path.is_file() for path in paths)
-assert {path.parent.name for path in paths} == {"Render", "Color_ID", "Masks"}
+assert len(paths) == 6 and all(path.is_file() for path in paths)
+assert {path.parent.name for path in paths} == {
+    "Render", "Color_ID", "Masks", "Cutouts",
+}
 assert {path.stem for path in paths if path.parent.name == "Masks"} == {
+    "CM_Body", "CM_Detail",
+}
+assert {path.stem for path in paths if path.parent.name == "Cutouts"} == {
     "CM_Body", "CM_Detail",
 }
 assert len(list((output / "Reports").glob("*.json"))) == 1

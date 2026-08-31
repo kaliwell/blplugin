@@ -22,6 +22,8 @@ def register():
 
 def unregister():
     import bpy
+    from .core.isolation import clear_all_scene_isolation
+    clear_all_scene_isolation()
     unregister_outliner_menu()
     for cls in reversed(CLASSES):
         bpy.utils.unregister_class(cls)

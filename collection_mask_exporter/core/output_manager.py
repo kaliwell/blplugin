@@ -95,6 +95,15 @@ def beauty_path(scene, settings):
     )
 
 
+def cutout_path(scene, settings, collection_name):
+    root, _color_dir, _mask_dir = ensure_output_dirs(scene, settings)
+    cutout_dir = os.path.join(root, "Cutouts")
+    os.makedirs(cutout_dir, exist_ok=True)
+    return os.path.join(
+        cutout_dir, safe_filename(collection_name) + output_extension(settings)
+    )
+
+
 def multilayer_path(scene, settings):
     root, _color_dir, _mask_dir = ensure_output_dirs(scene, settings)
     return os.path.join(root, format_output_name(
@@ -115,6 +124,29 @@ def unique_mask_paths(scene, settings, items):
     results = []
     for item in items:
         path = mask_path(scene, settings, item.collection.name)
+        key = os.path.normcase(os.path.abspath(path))
+        if key in used:
+            stem, extension = os.path.splitext(path)
+            identifier = str(item.collection.get("cmask_uuid", ""))[:8]
+            suffix = safe_filename(identifier) if identifier else "2"
+            candidate = f"{stem}_{suffix}{extension}"
+            counter = 2
+            while os.path.normcase(os.path.abspath(candidate)) in used:
+                candidate = f"{stem}_{suffix}_{counter}{extension}"
+                counter += 1
+            path = candidate
+            key = os.path.normcase(os.path.abspath(path))
+        used.add(key)
+        results.append((item, path))
+    return results
+
+
+def unique_cutout_paths(scene, settings, items):
+    """Return stable, non-colliding transparent-cutout paths."""
+    used = set()
+    results = []
+    for item in items:
+        path = cutout_path(scene, settings, item.collection.name)
         key = os.path.normcase(os.path.abspath(path))
         if key in used:
             stem, extension = os.path.splitext(path)

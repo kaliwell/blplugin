@@ -35,11 +35,13 @@ def write_export_report(scene, settings, operation, outputs, elapsed_seconds,
         "output_format": settings.output_format,
         "color_depth": settings.color_depth,
         "edge_adjustment": settings.edge_adjustment,
+        "mask_edge_protection": settings.mask_edge_protection,
         "alpha_mode": settings.alpha_mode,
         "mask_use_group_name": settings.mask_use_group_name,
         "mask_use_group_color": settings.mask_use_group_color,
         "transparent_material_mode": settings.transparent_material_mode,
         "create_compositor_nodes": settings.create_compositor_nodes,
+        "delivery_include_cutouts": settings.delivery_include_cutouts,
         "multilayer_layers": [
             item.name for item in settings.last_multilayer_layers
         ],

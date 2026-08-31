@@ -58,6 +58,25 @@ def _prepare_scene(scene, settings):
     scene.view_settings.gamma = 1.0
 
 
+def _prepare_cutout_scene(scene, settings):
+    """Keep the user's materials/engine/color management for RGBA cutouts."""
+    if not scene.camera:
+        raise RenderPipelineError(iface("The scene has no active camera"))
+    scene.render.film_transparent = True
+    scene.render.image_settings.file_format = settings.output_format
+    scene.render.image_settings.color_mode = "RGBA"
+    if settings.output_format == "PNG":
+        scene.render.image_settings.color_depth = (
+            settings.color_depth if settings.color_depth in {"8", "16"} else "16"
+        )
+    else:
+        scene.render.image_settings.color_depth = (
+            settings.color_depth if settings.color_depth in {"16", "32"} else "16"
+        )
+    scene.render.use_compositing = False
+    scene.render.use_sequencer = False
+
+
 def _create_view_layer(context):
     scene = context.scene
     source = context.window.view_layer if context.window else context.view_layer
@@ -240,7 +259,7 @@ def _render_split_color_id(context, filepath, resolution):
             masks = []
             for index, item in enumerate(targets):
                 path = os.path.join(temp, f"Mask_{index:04d}{extension}")
-                render_mask(context, item, path)
+                render_mask(context, item, path, edge_protection=False)
                 masks.append((tuple(item.color), path))
             combine_color_id(
                 filepath, masks, settings.output_format, settings.color_depth
@@ -339,7 +358,8 @@ def render_beauty(context, filepath):
                 )
 
 
-def render_mask(context, target, filepath=None, preview=False):
+def render_mask(context, target, filepath=None, preview=False,
+                edge_protection=None):
     scene = context.scene
     settings = scene.cmask_settings
     if not target or not target.collection:
@@ -392,8 +412,15 @@ def render_mask(context, target, filepath=None, preview=False):
             scene.render.filepath = filepath
         bpy.ops.render.render(write_still=bool(filepath) and not preview,
                               layer=layer.name)
+        protect_edge = (
+            settings.mask_edge_protection
+            if edge_protection is None else bool(edge_protection)
+        )
+        edge_amount = settings.edge_adjustment
+        if protect_edge and edge_amount >= 0:
+            edge_amount = min(edge_amount + 1, 32)
         apply_mask_postprocess(
-            scene, filepath, settings.edge_adjustment, settings.alpha_mode,
+            scene, filepath, edge_amount, settings.alpha_mode,
             preview=preview, color=mask_color,
         )
         return filepath
@@ -401,3 +428,54 @@ def render_mask(context, target, filepath=None, preview=False):
         _finish_render(context, layer, state, material,
                        had_exception=sys.exc_info()[0] is not None,
                        dynamic_resources=dynamic_resources)
+
+
+def render_cutout(context, target, filepath):
+    """Render one MASK group with original materials and transparent occluders."""
+    scene = context.scene
+    settings = scene.cmask_settings
+    if not target or not target.collection:
+        raise RenderPipelineError(iface("No mask group is selected"))
+    if not target.enabled or target.role != "MASK":
+        raise RenderPipelineError(iface("Only enabled MASK groups can be exported"))
+    resolution = _validate(settings)
+    instance_sources = {
+        source for sources in resolution.instance_sources.values()
+        for source in sources
+    }
+    instance_sources.update(
+        source for sources in resolution.geometry_node_sources.values()
+        for source in sources
+    )
+    state = capture_scene_state(context, instance_sources)
+    original_hidden = {
+        obj: bool(obj.hide_render)
+        for obj in {*scene.objects, *instance_sources}
+    }
+    layer = None
+    dynamic_resources = None
+    try:
+        _prepare_cutout_scene(scene, settings)
+        dynamic_resources = prepare_dynamic_geometry(
+            context, resolution, settings
+        )
+        layer = _create_view_layer(context)
+        configure_group_layers(
+            layer, settings.groups, target=target,
+            mode=settings.mask_output_mode, reset=False,
+        )
+        _configure_objects(
+            scene, resolution, target=target, mode=settings.mask_output_mode,
+            original_hidden=original_hidden,
+            transparent_material_mode=settings.transparent_material_mode,
+            geometry_nodes_split_sources=settings.geometry_nodes_split_sources,
+        )
+        scene.render.filepath = filepath
+        bpy.ops.render.render(write_still=True, layer=layer.name)
+        return filepath
+    finally:
+        _finish_render(
+            context, layer, state, None,
+            had_exception=sys.exc_info()[0] is not None,
+            dynamic_resources=dynamic_resources,
+        )

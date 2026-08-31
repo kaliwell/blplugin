@@ -2,6 +2,31 @@
 
 All notable changes to Collection Mask Exporter are recorded here.
 
+## 0.10.1 - 2026-08-07
+
+- Keep exact mask boundaries by default and make one-pixel outward padding an
+  explicit option, preventing overlaps between adjacent masks.
+- Vectorize Alpha expansion and contraction with NumPy to remove the large
+  pure-Python post-processing cost at production resolutions.
+- Preserve an active solo-render state when a new target is invalid, restore
+  changed Layer Collections by stable Collection identity after renames, and
+  hide unsupported Object menu entries.
+- Make cutouts honor the transparent-material policy, give Photoshop cutout
+  layers distinct names, and cover immediate rendering and failure paths with
+  regression tests.
+
+## 0.10.0 - 2026-08-07
+
+- Add default one-pixel Alpha edge protection so mask-driven cutouts no longer
+  lose the outer pixel ring; explicit negative edge adjustment still contracts.
+- Add selected-group and all-group transparent cutout exports that preserve the
+  original materials while converting other groups' occlusion to transparency.
+- Include per-group `Cutouts` in one-click delivery by default and import them as
+  regular Photoshop layers without treating them as Alpha-channel masks.
+- Add Object and Collection context-menu solo rendering. The target renders
+  normally, other visible objects become transparent Holdout occluders, and a
+  dedicated cancel action restores object, View Layer, and film state exactly.
+
 ## 0.9.1 - 2026-08-02
 
 - Make the release matrix fail on Blender Python exceptions, emitted tracebacks,

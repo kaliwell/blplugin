@@ -30,6 +30,16 @@ class CMASK_PT_MainPanel(_CMASK_PT_Base, bpy.types.Panel):
             text=settings.last_status,
             icon="ERROR" if settings.issue_count else "INFO",
         )
+        if settings.isolate_active:
+            box = layout.box()
+            box.alert = True
+            box.label(
+                text=iface("Solo render active: {name}").format(
+                    name=settings.isolate_label
+                ),
+                icon="RESTRICT_RENDER_OFF",
+            )
+            box.operator("cmask.clear_isolate_render", icon="LOOP_BACK")
 
 
 class _CMASK_PT_Child(_CMASK_PT_Base):
@@ -84,6 +94,10 @@ class CMASK_PT_ScanGroups(_CMASK_PT_Child, bpy.types.Panel):
         up.direction = "UP"
         down = row.operator("cmask.move_group", text="Lower Priority", icon="TRIA_DOWN")
         down.direction = "DOWN"
+        row = layout.row(align=True)
+        row.operator("cmask.isolate_collection_render", icon="RENDER_STILL")
+        if settings.isolate_active:
+            row.operator("cmask.clear_isolate_render", icon="LOOP_BACK")
 
 
 class CMASK_PT_Validation(_CMASK_PT_Child, bpy.types.Panel):
@@ -121,6 +135,7 @@ class CMASK_PT_OutputSettings(_CMASK_PT_Child, bpy.types.Panel):
         layout.prop(settings, "output_format")
         layout.prop(settings, "color_depth")
         layout.prop(settings, "edge_adjustment")
+        layout.prop(settings, "mask_edge_protection")
         layout.prop(settings, "alpha_mode")
         layout.prop(settings, "mask_use_group_name")
         layout.prop(settings, "mask_use_group_color")
@@ -171,6 +186,7 @@ class CMASK_PT_Delivery(_CMASK_PT_Child, bpy.types.Panel):
         layout = self.layout
         settings = self.settings(context)
         layout.operator("cmask.export_delivery", icon="RENDER_STILL")
+        layout.prop(settings, "delivery_include_cutouts")
         layout.prop(settings, "photoshop_create_channels")
         row = layout.row()
         row.enabled = bool(settings.last_outputs)
@@ -195,6 +211,9 @@ class CMASK_PT_IndividualExports(_CMASK_PT_Child, bpy.types.Panel):
         row.operator("cmask.export_color_id", icon="IMAGE_DATA")
         row.operator("cmask.export_selected_mask", icon="RENDERLAYERS")
         layout.operator("cmask.export_all_masks", icon="SEQ_STRIP_DUPLICATE")
+        row = layout.row(align=True)
+        row.operator("cmask.export_selected_cutout", icon="IMAGE_ALPHA")
+        row.operator("cmask.export_all_cutouts", icon="SEQ_STRIP_DUPLICATE")
         layout.operator("cmask.export_all", icon="EXPORT")
 
 

@@ -49,6 +49,23 @@ class CMASK_PG_OutputFile(PropertyGroup):
     path: StringProperty()
 
 
+class CMASK_PG_IsolationObjectState(PropertyGroup):
+    object: PointerProperty(type=bpy.types.Object)
+    object_name: StringProperty()
+    hide_render: BoolProperty(default=False)
+    is_holdout: BoolProperty(default=False)
+
+
+class CMASK_PG_IsolationLayerState(PropertyGroup):
+    view_layer_name: StringProperty()
+    path: StringProperty()
+    collection_name: StringProperty()
+    collection_pointer: StringProperty()
+    exclude: BoolProperty(default=False)
+    holdout: BoolProperty(default=False)
+    indirect_only: BoolProperty(default=False)
+
+
 class CMASK_PG_PresetGroup(PropertyGroup):
     collection_uuid: StringProperty()
     collection_name: StringProperty()
@@ -70,12 +87,14 @@ class CMASK_PG_Preset(PropertyGroup):
     output_format: StringProperty(default="PNG")
     color_depth: StringProperty(default="8")
     edge_adjustment: IntProperty(default=0)
+    mask_edge_protection: BoolProperty(default=False)
     alpha_mode: StringProperty(default="STRAIGHT")
     mask_use_group_name: BoolProperty(default=True)
     mask_use_group_color: BoolProperty(default=True)
     transparent_material_mode: StringProperty(default="INCLUDE")
     create_compositor_nodes: BoolProperty(default=False)
     photoshop_create_channels: BoolProperty(default=True)
+    delivery_include_cutouts: BoolProperty(default=True)
     multilayer_include_color_id: BoolProperty(default=True)
     cryptomatte_depth: StringProperty(default="6")
     geometry_nodes_split_sources: BoolProperty(default=False)
@@ -139,6 +158,11 @@ class CMASK_PG_Settings(PropertyGroup):
         name="Edge Expand/Contract", default=0, min=-32, max=32,
         description="Positive expands Alpha; negative contracts Alpha, in pixels",
     )
+    mask_edge_protection: BoolProperty(
+        name="Add One-Pixel Mask Padding",
+        default=False,
+        description="Optionally expand non-contracted mask Alpha by one pixel; exact masks stay unchanged when disabled",
+    )
     alpha_mode: EnumProperty(
         name="Alpha Storage",
         items=(("STRAIGHT", "Straight", "Keep RGB independent from Alpha"),
@@ -174,6 +198,11 @@ class CMASK_PG_Settings(PropertyGroup):
         name="Create Photoshop Alpha Channels",
         default=True,
         description="Create a matching Photoshop Alpha channel for each mask output",
+    )
+    delivery_include_cutouts: BoolProperty(
+        name="Include Transparent Cutouts",
+        default=True,
+        description="Render every MASK group with original materials and a transparent background during one-click delivery",
     )
     multilayer_include_color_id: BoolProperty(
         name="Include Color ID in Multilayer EXR", default=True,
@@ -224,6 +253,17 @@ class CMASK_PG_Settings(PropertyGroup):
     active_group_index: IntProperty(default=0)
     last_status: StringProperty(name="Status", default="Not scanned yet")
     last_diagnostic_report: StringProperty(default="", options={"HIDDEN"})
+    isolate_active: BoolProperty(default=False, options={"HIDDEN"})
+    isolate_label: StringProperty(default="", options={"HIDDEN"})
+    isolate_previous_film_transparent: BoolProperty(
+        default=False, options={"HIDDEN"}
+    )
+    isolate_object_states: CollectionProperty(
+        type=CMASK_PG_IsolationObjectState, options={"HIDDEN"}
+    )
+    isolate_layer_states: CollectionProperty(
+        type=CMASK_PG_IsolationLayerState, options={"HIDDEN"}
+    )
     issue_count: IntProperty(default=0)
 
 
@@ -231,6 +271,8 @@ CLASSES = (
     CMASK_PG_GroupItem,
     CMASK_PG_Issue,
     CMASK_PG_OutputFile,
+    CMASK_PG_IsolationObjectState,
+    CMASK_PG_IsolationLayerState,
     CMASK_PG_PresetGroup,
     CMASK_PG_Preset,
     CMASK_PG_Settings,

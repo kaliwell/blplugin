@@ -56,6 +56,18 @@ try:
     assert bpy.app.translations.pgettext_iface(
         "Alpha Storage"
     ) == "透明度存储方式"
+    assert bpy.app.translations.pgettext_iface(
+        "Add One-Pixel Mask Padding"
+    ) == "蒙版扩张 1 像素（可选）"
+    assert bpy.app.translations.pgettext(
+        "Solo Render Object", operator_context
+    ) == "单独渲染此对象"
+    assert bpy.app.translations.pgettext(
+        "Export Selected Transparent Cutout", operator_context
+    ) == "导出选中组透明抠图"
+    assert bpy.app.translations.pgettext_iface(
+        "View Layer {name} no longer exists"
+    ) == "View Layer {name} 已不存在"
     expected_panel_titles = {
         "Scan and Groups": "扫描与组",
         "Validation": "检查与诊断",

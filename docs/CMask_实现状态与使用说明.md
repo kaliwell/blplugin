@@ -1,6 +1,6 @@
 # CMask 实现状态与使用说明
 
-> 插件版本：v0.9.1
+> 插件版本：v0.10.1
 > 正式支持：Blender 4.5.x、5.0.x、5.2.x
 > 验证版本：4.5.12、5.0.1、5.2.0
 
@@ -66,6 +66,10 @@
 - `VISIBLE`：保留其他组的真实遮挡。
 - `SILHOUETTE`：输出目标组完整轮廓。
 - Alpha 边缘扩张/收缩，范围为 `-32` 到 `32` 像素；正值扩张，负值收缩。
+- 默认保持精确 Alpha 边界；需要特殊补边时可开启“蒙版扩张 1 像素（可选）”；
+  用户明确设置负值收缩时不会叠加自动补偿。
+- 可按选中 MASK 组或全部 MASK 组直接输出 `Cutouts`：保留目标原始材质，
+  其他组继续参与真实遮挡，但遮挡区域直接写为透明，不再二次套蒙版。
 - 8-bit、16-bit RGBA PNG，以及 16-bit、32-bit RGBA OpenEXR。
 - 当前相机或场景全部相机批量导出。
 - 当前帧或自定义起止帧、步长批量导出。
@@ -84,7 +88,9 @@
 - Cryptomatte 固定使用 32-bit float，可配置每像素保存 2–12 个 Collection；
   为保持语义正确，它固定使用 VISIBLE 覆盖率且不应用边缘扩张/收缩。
 - 透明背景、Standard 视图变换和 Emission 覆盖材质。
-- 自动创建 `Color_ID`、`Masks` 和 `Reports` 目录。
+- 自动创建 `Color_ID`、`Masks`、`Cutouts` 和 `Reports` 目录。
+- 对象或 Collection 右键可进入单独渲染：目标正常渲染，其他可见对象作为
+  透明 Holdout 遮挡；主面板和右键菜单均可取消并精确恢复进入前状态。
 
 ### 非破坏性处理
 
@@ -99,7 +105,7 @@
 ### 命令行与渲染农场
 
 - 通过 Blender `--background` 和 `collection_mask_exporter.cli.main()` 执行。
-- 支持彩色 ID、选中蒙版、全部蒙版、全部导出、批量、Multilayer EXR 和
+- 支持彩色 ID、选中蒙版、全部蒙版、选中/全部透明抠图、全部导出、批量、Multilayer EXR 和
   Collection Cryptomatte 操作。
 - 支持 JSON 任务文件，并允许显式命令行参数覆盖任务字段。
 - 可选择场景和场景内预设，覆盖输出目录、扫描、格式、相机与帧范围设置。
@@ -115,7 +121,7 @@
   命名图层，并自动保存带图层的 PSD。
 - 默认让蒙版文件、Photoshop 图层和 Alpha 通道直接使用 Collection 组名；
 - 蒙版 RGB 与同组 Color ID 颜色一致，Alpha 仍保留精确覆盖率；
-- 一键生成正式渲染、Color ID、全部蒙版、Photoshop JSX 和交接清单；
+- 一键生成正式渲染、Color ID、全部蒙版、全部透明抠图、Photoshop JSX 和交接清单；
 - 可将每个 `Masks` 图层的透明度选区写入独立同组名 Alpha 通道；
   通道名会自动消解重复，PSD 保存时显式保留 Alpha 通道。
 - “Photoshop 创建 Alpha 通道”可关闭，并可随场景预设保存。
@@ -176,6 +182,16 @@ Compositing Node Group，插件会自动选择对应 API。
 生成结果位于输出目录的 `Photoshop` 子目录：`*_import.jsx` 是导入脚本，
 `*_handoff.json` 是交接清单；运行脚本后 `*.psd` 写入同一目录。为了避免
 Photoshop 图层位深不兼容，建议同一批输出使用相同格式和位深。
+
+“导出选中组透明抠图”和“批量导出全部透明抠图”直接使用目标对象的原材质与
+当前渲染引擎。`VISIBLE` 模式保留其他组的真实遮挡并把遮挡部分写成透明；
+`SILHOUETTE` 模式忽略其他组，输出目标完整轮廓。一键交付默认包含全部抠图，
+可用“一键交付包含透明抠图”关闭。
+
+在 3D 视图对象右键菜单或 Outliner 的对象/Collection 右键菜单中选择“单独渲染”
+会立即渲染，并保持该状态以便继续按 F12。此时其他原本可见的几何体不会消失，
+而是作为透明遮挡参与深度关系。使用主面板醒目的“取消单独渲染”或右键菜单
+同名命令，可恢复进入前的 `hide_render`、Holdout、View Layer 和透明背景设置。
 
 手动模式下，先在 `Collection` 字段中选择集合，再点击“添加 Collection”。
 从列表移除只取消插件管理，不会删除 Blender Collection，也不会清除它已经

@@ -1,7 +1,7 @@
 # CMask 项目交接与当前进度
 
 > 交接日期：2026-08-02
-> 当前版本：v0.9.1
+> 当前版本：v0.10.1
 > 项目目录：`D:\blplugin`
 > 正式支持：Blender 4.5.x、5.0.x、5.2.x
 > 最新验证矩阵：Blender 4.5.12 LTS、5.0.1、5.2.0 LTS
@@ -9,21 +9,21 @@
 ## 1. 交接结论
 
 Collection Mask Exporter 当前已经形成可安装、可使用、可测试的完整 Blender
-Extension。以 v0.9.1 已定义的功能范围计算，核心交付流程已完成；剩余工作主要是
+Extension。以 v0.10.1 已定义的功能范围计算，核心交付流程已完成；剩余工作主要是
 Blender 6.0 正式版发布后的实机认证、更多动态 Geometry Nodes 数据域，以及持续的
 UI/Photoshop 跨版本兼容维护。
 
 当前可直接交付的安装包与完整交付包：
 
 ```text
-D:\blplugin\dist\collection_mask_exporter-0.9.1.zip
-D:\blplugin\dist\collection_mask_exporter-0.9.1-release.zip
+D:\blplugin\dist\collection_mask_exporter-0.10.1.zip
+D:\blplugin\dist\collection_mask_exporter-0.10.1-release.zip
 ```
 
 对应 SHA256 统一记录在：
 
 ```text
-D:\blplugin\dist\collection_mask_exporter-0.9.1-SHA256.txt
+D:\blplugin\dist\collection_mask_exporter-0.10.1-SHA256.txt
 ```
 
 最终安装 ZIP 已分别通过 Blender 4.5、5.0、5.2 的清单验证，以及隔离用户配置下
@@ -123,6 +123,20 @@ D:\blplugin\dist\collection_mask_exporter-0.9.1-SHA256.txt
 - 发布脚本统一使用 Blender `--python-exit-code 1` 强失败机制。
 - 测试出现 Traceback 或缺少对应成功标志时立即终止发布。
 - 补齐 v0.9.0/v0.9.1 CHANGELOG、新子面板翻译断言和明确维护者信息。
+
+### v0.10.1
+
+- 默认保持精确蒙版边界，1 像素向外补边改为可选，避免相邻蒙版重叠。
+- Alpha 扩张/收缩改为 NumPy 向量化处理。
+- 加固单独渲染的目标校验、Collection 改名恢复和立即渲染测试。
+- Cutout 遵循透明材质策略，Photoshop Cutout 图层使用独立名称。
+
+### v0.10.0
+
+- 默认补齐蒙版外沿 1 像素，避免蒙版抠图出现少一圈的问题。
+- 新增选中组和全部组的原材质透明抠图，其他组按真实遮挡转为透明。
+- 一键交付默认增加 `Cutouts`，并作为普通图层进入 Photoshop。
+- 对象和 Collection 右键新增单独渲染；取消后恢复对象、View Layer 和透明背景状态。
 
 ## 4. 关键工作流
 
@@ -285,12 +299,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\release.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\release.ps1 -FullRenderMatrix
 ```
 
-v0.9.1 当前发布产物：
+v0.10.1 当前发布产物：
 
-- `dist/collection_mask_exporter-0.9.1.zip`：Blender 从磁盘安装包。
-- `dist/collection_mask_exporter-0.9.1-release.zip`：README、CHANGELOG、全部文档、
+- `dist/collection_mask_exporter-0.10.1.zip`：Blender 从磁盘安装包。
+- `dist/collection_mask_exporter-0.10.1-release.zip`：README、CHANGELOG、全部文档、
   示例工程和安装包组成的完整交付包。
-- `dist/collection_mask_exporter-0.9.1-SHA256.txt`：上述两个 ZIP 的 SHA256。
+- `dist/collection_mask_exporter-0.10.1-SHA256.txt`：上述两个 ZIP 的 SHA256。
 
 ## 10. 已知边界与风险
 

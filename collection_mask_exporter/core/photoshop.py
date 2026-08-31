@@ -17,6 +17,8 @@ def _layer_name(path):
     parent = os.path.basename(os.path.dirname(path)).lower()
     if parent == "masks":
         return stem
+    if parent == "cutouts":
+        return f"{stem} Cutout"
     if parent == "color_id":
         return "Color ID"
     if parent == "render":
