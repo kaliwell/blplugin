@@ -5,6 +5,10 @@
 # User/output workspaces
 /1/
 /testfloders1/
+/image/
+/marketing/
+/output/
+/tmp/
 /未命名*.blend*
 /CMask_*_Output/
 
